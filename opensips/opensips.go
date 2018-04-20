@@ -7,6 +7,8 @@ import (
 	"net"
 	"os"
 	"path"
+	"strconv"
+	"strings"
 	"sync/atomic"
 	"time"
 )
@@ -20,6 +22,13 @@ type OpenSIPS struct {
 	tmpdir string
 
 	count int64
+}
+
+// Statistics holds the module, name and value of a statistic
+// as returned by OpenSIPS.
+type Statistic struct {
+	Module, Name string
+	Value        float64
 }
 
 // New creates a new OpenSIPS instance. Pass it the running OpenSIPS'
@@ -41,7 +50,7 @@ func New(socket string) (*OpenSIPS, error) {
 // GetStatistics calls the get_statistics management function and returns the
 // statistics OpenSIPS sends back. The targets can be "all", "group:" or
 // "name" (e.g. "shmem:" or "rcv_requests").
-func (o *OpenSIPS) GetStatistics(targets ...string) ([]string, error) {
+func (o *OpenSIPS) GetStatistics(targets ...string) (map[string]Statistic, error) {
 	msg := []byte(":get_statistics:\n")
 	for _, target := range targets {
 		msg = append(msg, []byte(target)...)
@@ -64,7 +73,39 @@ func (o *OpenSIPS) GetStatistics(targets ...string) ([]string, error) {
 		rv = append(rv, line)
 		line, err = buf.ReadString('\n')
 	}
-	return rv[1:], nil
+
+	statistics, err := parseStatistic(rv[1:])
+	if err != nil {
+		return nil, fmt.Errorf("Error while parsing statistics: %v", err)
+	}
+
+	return statistics, nil
+}
+
+func parseStatistic(statistics []string) (map[string]Statistic, error) {
+	var res = map[string]Statistic{}
+	for _, s := range statistics {
+		s = strings.TrimSuffix(s, "\n")
+		metricSplit := strings.Split(s, ":")
+		module := metricSplit[0]
+		name := strings.Split(strings.Join(metricSplit[1:], ":"), " ")[0]
+
+		i := strings.LastIndex(s, " ")
+		valueString := s[i+1:]
+		value, err := strconv.ParseFloat(valueString, 64)
+		if err != nil {
+			return res, err
+		}
+
+		stat := Statistic{
+			Module: module,
+			Name:   name,
+			Value:  value,
+		}
+
+		res[stat.Name] = stat
+	}
+	return res, nil
 }
 
 func (o *OpenSIPS) roundtrip(request []byte) ([]byte, error) {
