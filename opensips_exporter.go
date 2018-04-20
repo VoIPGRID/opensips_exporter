@@ -81,7 +81,7 @@ var (
 )
 
 func main() {
-	port = strflag("port", "9737", "Port on which the OpenSIPS exporter listens.")
+	port = strflag("port", "9434", "Port on which the OpenSIPS exporter listens.")
 	metricsPath = strflag("path", "/metrics", "The path where metrics will be served")
 	socketPath = strflag("socket", "/var/run/ser-fg/ser.sock", "Path to the socket file for OpenSIPS.")
 	flag.Parse()

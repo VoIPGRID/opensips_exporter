@@ -16,7 +16,7 @@ Usage of opensips_exporter:
   -path string
     	The path where metrics will be served (default "/metrics")
   -port string
-    	Port on which the OpenSIPS exporter listens. (default "9737")
+    	Port on which the OpenSIPS exporter listens. (default "9434")
   -socket string
     	Path to the socket file for OpenSIPS. (default "/var/run/ser-fg/ser.sock")
 ```
@@ -89,7 +89,7 @@ get metrics about the [core](http://www.opensips.org/Documentation/Interface-Cor
 and [usrloc](http://www.opensips.org/html/docs/modules/1.11.x/usrloc.html#idp5699792) 
 module you can do this as follows:
 ```
-curl localhost:9737/metrics?collect[]=core:&collect[]=usrloc:
+curl localhost:9434/metrics?collect[]=core:&collect[]=usrloc:
 ```
 
 **_Note: You have to append `:` to the module name for this to work._**
