@@ -5,6 +5,10 @@ import (
 	"log"
 	"net/http"
 
+	"flag"
+	"os"
+	"strings"
+
 	"github.com/VoIPGRID/opensips_exporter/opensips"
 	"github.com/VoIPGRID/opensips_exporter/processors"
 	"github.com/prometheus/client_golang/prometheus"
@@ -13,6 +17,8 @@ import (
 
 var o *opensips.OpenSIPS
 var collectAll = []string{"core:", "shmem:", "net:", "uri:", "tm:", "sl:", "usrloc:", "dialog:", "registrar:", "pkmem:", "load:"}
+
+const envPrefix = "OPENSIPS_EXPORTER"
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	collect := r.URL.Query()["collect[]"]
@@ -58,28 +64,45 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	h.ServeHTTP(w, r)
 }
 
+// strflag is like flag.String, with value overridden by an environment
+// variable (when present). e.g. with socket path, the env var used as default
+// is OPENSIPS_EXPORTER_SOCKET_PATH, if present in env.
+func strflag(name string, value string, usage string) *string {
+	if v, ok := os.LookupEnv(envPrefix + strings.ToUpper(name)); ok {
+		return flag.String(name, v, usage)
+	}
+	return flag.String(name, value, usage)
+}
+
+var (
+	socketPath  *string
+	metricsPath *string
+	port        *string
+)
+
 func main() {
-	listenAddress := ":9737"                 // TODO: make this a flag
-	metricsPath := "/metrics"                // TODO: maybe make this a flag
-	socketPath := "/var/run/ser-fg/ser.sock" // TODO: make this a flag or even a mandatory argument
+	port = strflag("port", "9737", "Port on which the OpenSIPS exporter listens.")
+	metricsPath = strflag("path", "/metrics", "The path where metrics will be served")
+	socketPath = strflag("socket", "/var/run/ser-fg/ser.sock", "Path to the socket file for OpenSIPS.")
+	flag.Parse()
 
 	// This part is to mock up setting up and using the Management
 	// Interface. Replace/remove this eventually.
 	var err error
-	o, err = opensips.New(socketPath)
+	o, err = opensips.New(*socketPath)
 	if err != nil {
 		log.Fatalf("failed to open socket: %v\n", err)
 	}
 
-	http.HandleFunc(metricsPath, handler)
+	http.HandleFunc(*metricsPath, handler)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`<html>
 			<head><title>OpenSIPS Exporter</title></head>
 			<body>
 			<h1>OpenSIPS Exporter</h1>
-			<p><a href="` + metricsPath + `">Metrics</a></p>
+			<p><a href="` + *metricsPath + `">Metrics</a></p>
 			</body>
 			</html>`))
 	})
-	http.ListenAndServe(listenAddress, nil)
+	http.ListenAndServe(":"+*port, nil)
 }

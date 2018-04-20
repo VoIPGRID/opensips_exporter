@@ -11,9 +11,9 @@ type RegistrarProcessor struct {
 
 var registrarLabelNames = []string{}
 var registrarMetrics = map[string]metric{
-	"max_expires":    newMetric("registrar", "max_expires", " Value of max_expires parameter.", registrarLabelNames, prometheus.GaugeValue),
-	"max_contacts":   newMetric("registrar", "max_contacts", " Value of max_contacts parameter.", registrarLabelNames, prometheus.GaugeValue),
-	"default_expire": newMetric("registrar", "default_expire", " Value of default_expire parameter.", registrarLabelNames, prometheus.GaugeValue),
+	"max_expires":    newMetric("registrar", "max_expires", "Value of max_expires parameter.", registrarLabelNames, prometheus.GaugeValue),
+	"max_contacts":   newMetric("registrar", "max_contacts", "Value of max_contacts parameter.", registrarLabelNames, prometheus.GaugeValue),
+	"default_expire": newMetric("registrar", "default_expire", "Value of default_expire parameter.", registrarLabelNames, prometheus.GaugeValue),
 	"accepted_regs":  newMetric("registrar", "registrations", "Number of registrations.", []string{"type"}, prometheus.CounterValue),
 	"rejected_regs":  newMetric("registrar", "registrations", "Number of registrations.", []string{"type"}, prometheus.CounterValue),
 }
