@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
@@ -45,9 +44,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	for collector := range collectors {
 		err := registry.Register(collector)
 		if err != nil {
-			log.Fatalf("Couldn't register collector: %v", err)
-			http.Error(w, fmt.Sprintf("Couldn't register collector: %s", err), http.StatusInternalServerError)
-			return
+			log.Printf("Couldn't register collector for %v: %v\n", collector, err)
 		}
 	}
 
