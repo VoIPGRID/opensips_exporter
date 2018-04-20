@@ -1,5 +1,6 @@
-# opensips_exporter
-
+# opensips_exporter 
+[![Go Report Card](https://goreportcard.com/badge/github.com/VoIPGRID/opensips_exporter)](https://goreportcard.com/report/github.com/VoIPGRID/opensips_exporter) ![Docker Pulls](https://img.shields.io/docker/pulls/voipgrid/opensips_exporter.svg)
+ 
 This exporter exposes OpenSIPS metrics for consumption by Prometheus using the Unix socket 
 provided by OpenSIPS. It uses the 
 OpenSIPS [Management Interface](http://www.opensips.org/Documentation/Interface-MI-1-11) to gather
