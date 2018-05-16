@@ -7,6 +7,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
+// LoadProcessor describes busy children
+// doc: http://www.opensips.org/Documentation/Interface-CoreStatistics-1-11#toc14
 type LoadProcessor struct {
 	statistics map[string]opensips.Statistic
 }
@@ -24,12 +26,14 @@ func init() {
 	Processors["load"] = loadProcessorFunc
 }
 
+// Describe implements prometheus.Collector.
 func (p LoadProcessor) Describe(ch chan<- *prometheus.Desc) {
 	for _, m := range p.loadMetrics() {
 		ch <- m.metric.Desc
 	}
 }
 
+// Collect implements prometheus.Collector.
 func (p LoadProcessor) Collect(ch chan<- prometheus.Metric) {
 	for key, u := range p.loadMetrics() {
 		if u.ip != "" {

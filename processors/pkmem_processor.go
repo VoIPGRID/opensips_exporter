@@ -7,6 +7,9 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
+// PkmemProcessor provides metrics about private memory usage and fragments
+// doc: http://www.opensips.org/Documentation/Interface-CoreStatistics-1-11#toc28
+// src: https://github.com/OpenSIPS/opensips/blob/b917c70ba8d5797dc6364aaf702c3415539be52a/core_stats.c#L165
 type PkmemProcessor struct {
 	statistics map[string]opensips.Statistic
 }
@@ -26,12 +29,14 @@ func init() {
 	Processors["fragments"] = pkmemProcessorFunc
 }
 
+// Describe implements prometheus.Collector.
 func (p PkmemProcessor) Describe(ch chan<- *prometheus.Desc) {
 	for _, m := range p.pkmemMetrics() {
 		ch <- m.metric.Desc
 	}
 }
 
+// Collect implements prometheus.Collector.
 func (p PkmemProcessor) Collect(ch chan<- prometheus.Metric) {
 	for key, u := range p.pkmemMetrics() {
 		ch <- prometheus.MustNewConstMetric(

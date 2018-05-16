@@ -5,6 +5,9 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
+// ShmemProcessor provices metrics about shared memory
+// doc: http://www.opensips.org/Documentation/Interface-CoreStatistics-1-11#toc21
+// src: https://github.com/OpenSIPS/opensips/blob/1.11/mem/shm_mem.c#L52
 type ShmemProcessor struct {
 	statistics map[string]opensips.Statistic
 }
@@ -26,12 +29,14 @@ func init() {
 	Processors["shmem:"] = shmemProcessorFunc
 }
 
-func (c ShmemProcessor) Describe(ch chan<- *prometheus.Desc) {
+// Describe implements prometheus.Collector.
+func (p ShmemProcessor) Describe(ch chan<- *prometheus.Desc) {
 	for _, metric := range shmemMetrics {
 		ch <- metric.Desc
 	}
 }
 
+// Collect implements prometheus.Collector.
 func (p ShmemProcessor) Collect(ch chan<- prometheus.Metric) {
 	for key, metric := range shmemMetrics {
 		ch <- prometheus.MustNewConstMetric(

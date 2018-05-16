@@ -7,6 +7,9 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
+// UsrlocProcessor provides metrics about User locations via registring.
+// doc: http://www.opensips.org/html/docs/modules/1.11.x/usrloc.html#idp5699792
+// src: Not clear
 type UsrlocProcessor struct {
 	statistics map[string]opensips.Statistic
 }
@@ -23,12 +26,14 @@ func init() {
 	Processors["expires"] = usrlocProcessorFunc
 }
 
+// Describe implements prometheus.Collector.
 func (p UsrlocProcessor) Describe(ch chan<- *prometheus.Desc) {
 	for _, m := range p.usrlocMetrics() {
 		ch <- m.metric.Desc
 	}
 }
 
+// Collect implements prometheus.Collector.
 func (p UsrlocProcessor) Collect(ch chan<- prometheus.Metric) {
 	for key, u := range p.usrlocMetrics() {
 		if u.domain != "" {

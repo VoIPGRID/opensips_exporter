@@ -24,7 +24,7 @@ type OpenSIPS struct {
 	count int64
 }
 
-// Statistics holds the module, name and value of a statistic
+// Statistic holds the module, name and value of a statistic
 // as returned by OpenSIPS.
 type Statistic struct {
 	Module, Name string
