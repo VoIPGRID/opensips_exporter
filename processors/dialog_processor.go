@@ -5,6 +5,9 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
+// DialogProcessor exposes metrics about SIP dialogs.
+// doc: http://www.opensips.org/html/docs/modules/1.11.x/dialog.html#idp5859728
+// src: https://github.com/OpenSIPS/opensips/blob/1.11/modules/dialog/dialog.c#L283
 type DialogProcessor struct {
 	statistics map[string]opensips.Statistic
 }
@@ -31,12 +34,14 @@ func init() {
 	Processors["dialog:"] = dialogProcessorFunc
 }
 
-func (c DialogProcessor) Describe(ch chan<- *prometheus.Desc) {
+// Describe implements prometheus.Collector.
+func (p DialogProcessor) Describe(ch chan<- *prometheus.Desc) {
 	for _, metric := range dialogMetrics {
 		ch <- metric.Desc
 	}
 }
 
+// Collect implements prometheus.Collector.
 func (p DialogProcessor) Collect(ch chan<- prometheus.Metric) {
 	ch <- prometheus.MustNewConstMetric(
 		dialogMetrics["active_dialogs"].Desc,

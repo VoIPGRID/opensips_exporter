@@ -5,6 +5,9 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
+// CoreProcessor provides basic metrics,
+// doc: http://www.opensips.org/Documentation/Interface-CoreStatistics-1-11#toc1
+// src: https://github.com/OpenSIPS/opensips/blob/1.11/core_stats.h
 type CoreProcessor struct {
 	statistics map[string]opensips.Statistic
 }
@@ -37,77 +40,79 @@ func coreProcessorFunc(s map[string]opensips.Statistic) prometheus.Collector {
 	}
 }
 
-func (c CoreProcessor) Describe(ch chan<- *prometheus.Desc) {
+// Describe implements prometheus.Collector.
+func (p CoreProcessor) Describe(ch chan<- *prometheus.Desc) {
 	for _, metric := range coreMetrics {
 		ch <- metric.Desc
 	}
 }
 
-func (c CoreProcessor) Collect(ch chan<- prometheus.Metric) {
+// Collect implements prometheus.Collector.
+func (p CoreProcessor) Collect(ch chan<- prometheus.Metric) {
 	ch <- prometheus.MustNewConstMetric(
 		coreMetrics["rcv_requests"].Desc,
 		coreMetrics["rcv_requests"].ValueType,
-		c.statistics["rcv_requests"].Value,
+		p.statistics["rcv_requests"].Value,
 	)
 	ch <- prometheus.MustNewConstMetric(
 		coreMetrics["rcv_replies"].Desc,
 		coreMetrics["rcv_replies"].ValueType,
-		c.statistics["rcv_replies"].Value,
+		p.statistics["rcv_replies"].Value,
 	)
 	ch <- prometheus.MustNewConstMetric(
 		coreMetrics["fwd_requests"].Desc,
 		coreMetrics["fwd_requests"].ValueType,
-		c.statistics["fwd_requests"].Value,
+		p.statistics["fwd_requests"].Value,
 		"forwarded",
 	)
 	ch <- prometheus.MustNewConstMetric(
 		coreMetrics["fwd_replies"].Desc,
 		coreMetrics["fwd_replies"].ValueType,
-		c.statistics["fwd_replies"].Value,
+		p.statistics["fwd_replies"].Value,
 		"forwarded",
 	)
 	ch <- prometheus.MustNewConstMetric(
 		coreMetrics["drop_requests"].Desc,
 		coreMetrics["drop_requests"].ValueType,
-		c.statistics["drop_requests"].Value,
+		p.statistics["drop_requests"].Value,
 		"dropped",
 	)
 	ch <- prometheus.MustNewConstMetric(
 		coreMetrics["drop_replies"].Desc,
 		coreMetrics["drop_replies"].ValueType,
-		c.statistics["drop_replies"].Value,
+		p.statistics["drop_replies"].Value,
 		"dropped",
 	)
 	ch <- prometheus.MustNewConstMetric(
 		coreMetrics["err_requests"].Desc,
 		coreMetrics["err_requests"].ValueType,
-		c.statistics["err_requests"].Value,
+		p.statistics["err_requests"].Value,
 		"error",
 	)
 	ch <- prometheus.MustNewConstMetric(
 		coreMetrics["err_replies"].Desc,
 		coreMetrics["err_replies"].ValueType,
-		c.statistics["err_replies"].Value,
+		p.statistics["err_replies"].Value,
 		"error",
 	)
 	ch <- prometheus.MustNewConstMetric(
 		coreMetrics["bad_URIs_rcvd"].Desc,
 		coreMetrics["bad_URIs_rcvd"].ValueType,
-		c.statistics["bad_URIs_rcvd"].Value,
+		p.statistics["bad_URIs_rcvd"].Value,
 	)
 	ch <- prometheus.MustNewConstMetric(
 		coreMetrics["unsupported_methods"].Desc,
 		coreMetrics["unsupported_methods"].ValueType,
-		c.statistics["unsupported_methods"].Value,
+		p.statistics["unsupported_methods"].Value,
 	)
 	ch <- prometheus.MustNewConstMetric(
 		coreMetrics["bad_msg_hdr"].Desc,
 		coreMetrics["bad_msg_hdr"].ValueType,
-		c.statistics["bad_msg_hdr"].Value,
+		p.statistics["bad_msg_hdr"].Value,
 	)
 	ch <- prometheus.MustNewConstMetric(
 		coreMetrics["timestamp"].Desc,
 		coreMetrics["timestamp"].ValueType,
-		c.statistics["timestamp"].Value,
+		p.statistics["timestamp"].Value,
 	)
 }
