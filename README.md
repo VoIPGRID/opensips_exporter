@@ -1,27 +1,50 @@
 # opensips_exporter 
-[![Go Report Card](https://goreportcard.com/badge/github.com/VoIPGRID/opensips_exporter)](https://goreportcard.com/report/github.com/VoIPGRID/opensips_exporter) ![Docker Pulls](https://img.shields.io/docker/pulls/voipgrid/opensips_exporter.svg)
- 
 This exporter exposes OpenSIPS metrics for consumption by Prometheus using the Unix socket 
-provided by OpenSIPS. It uses the 
+provided by OpenSIPS. It uses the
 OpenSIPS [Management Interface](http://www.opensips.org/Documentation/Interface-MI-1-11) to gather
 these statistics.
 
 Tested and developed for OpenSIPS 1.11. Though the Management Interface to gather metrics is available
 in other OpenSIPS versions.
 
+## Table of contents
+
+- [opensips_exporter](#opensipsexporter)
+    - [Table of contents](#table-of-contents)
+    - [Status](#status)
+    - [Usage](#usage)
+        - [Exported Metrics](#exported-metrics)
+        - [Processors](#processors)
+            - [Filtering enabled processors](#filtering-enabled-processors)
+        - [Development](#development)
+    - [Contributing](#contributing)
+    - [Contributors](#contributors)
+    - [License](#license)
+
+## Status
+
+[![Go Report Card](https://goreportcard.com/badge/github.com/VoIPGRID/opensips_exporter)](https://goreportcard.com/report/github.com/VoIPGRID/opensips_exporter) 
+[![Docker Pulls](https://img.shields.io/docker/pulls/voipgrid/opensips_exporter.svg?maxAge=604800)](https://hub.docker.com/r/voipgrid/opensips_exporter/)
+
+Active / maintained
+
+This project is considered stable for use in production environments.
+
 ## Usage
+
 Make sure `$GOPATH/bin` is in your `$PATH`.
-```
+
+```text
 Usage of opensips_exporter:
   -path string
-    	The path where metrics will be served (default "/metrics")
+        The path where metrics will be served (default "/metrics")
   -addr string
-    	Address on which the OpenSIPS exporter listens. (e.g. 127.0.0.1:9434) (default ":9434")
+        Address on which the OpenSIPS exporter listens. (e.g. 127.0.0.1:9434) (default ":9434")
   -socket string
-    	Path to the socket file for OpenSIPS. (default "/var/run/ser-fg/ser.sock")
+        Path to the socket file for OpenSIPS. (default "/var/run/ser-fg/ser.sock")
 ```
 
-## Exported Metrics
+### Exported Metrics
 
 | Metric | Meaning | Labels |
 | ------ | ------- | ------ |
@@ -72,7 +95,7 @@ Usage of opensips_exporter:
 | opensips_usrloc_expires | Total number of expired contacts for that domain. | domain |
 | opensips_usrloc_users | Number of AOR existing in the USRLOC memory cache for that domain. | domain |
 
-## Processors
+### Processors
 
 There are processors available per 'module' of OpenSIPS. The processors take the
 statistics from the OpenSIPS socket and turn it into a Prometheus metric. You can 
@@ -83,18 +106,21 @@ processor can be found in `./processors/core_processor`.
 You can find out more about the available modules in the OpenSIPS documentation.
 At this time not all modules have a processor written for them. (help wanted!)
 
-### Filtering enabled processors
+#### Filtering enabled processors
+
 It is possible to select what processors you want metrics from. You can do this by
 appending `collect[]` parameters to your request. If for example you only want to
 get metrics about the [core](http://www.opensips.org/Documentation/Interface-CoreStatistics-1-11) 
 and [usrloc](http://www.opensips.org/html/docs/modules/1.11.x/usrloc.html#idp5699792) 
 module you can do this as follows:
-```
+
+```bash
 curl localhost:9434/metrics?collect[]=core:&collect[]=usrloc:
 ```
 
 **_Note: You have to append `:` to the module name for this to work._**
-## Development
+
+### Development
 
 To work on opensips_exporter, get a recent [Go], get a recent [dep], and
 run:
@@ -114,5 +140,17 @@ the `./processors` package. To extend this exporter with metrics from other modu
 create your own processor and implement the `Collector` interface. See the other
 processors for inspiration. 
 
+## Contributing
+
+See the [CONTRIBUTING.md](.github/CONTRIBUTING.md) file on how to contribute to this project.
+
+## Contributors
+
+See the [CONTRIBUTORS.md](CONTRIBUTORS.md) file for a list of contributors to the project.
+
 [Go]: https://golang.org/doc/install (Getting Started - The Go Programming Language)
 [dep]: https://golang.github.io/dep/docs/installation.html (Installation · dep)
+
+## License
+
+opensips_exporter is made available under the Apache 2.0 license. See the [LICENSE](LICENSE) file for more info.
