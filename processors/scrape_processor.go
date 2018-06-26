@@ -23,6 +23,8 @@ func (p scrapeProcessor) Collect(ch chan<- prometheus.Metric) {
 	)
 }
 
+// NewScrapeProcessor is used to export meta metrics about the exporter/OpenSIPS such as up status,
+// time to scrape, metrics processed, scrape count etc.
 func NewScrapeProcessor(upStatus float64) prometheus.Collector {
 	return &scrapeProcessor{
 		upMetric: newMetric("", "up", "Whether the opensips exporter could read metrics from the Management Interface socket. (i.e. is OpenSIPS up)", []string{}, prometheus.GaugeValue),
