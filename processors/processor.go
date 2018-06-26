@@ -13,7 +13,7 @@ type metric struct {
 type processor func(map[string]opensips.Statistic) prometheus.Collector
 
 // Processors is a map of processors for each subsystem
-var Processors = make(map[string]processor)
+var OpensipsProcessors = make(map[string]processor)
 
 const namespace = "opensips"
 

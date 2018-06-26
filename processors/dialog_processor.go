@@ -5,10 +5,10 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-// DialogProcessor exposes metrics about SIP dialogs.
+// dialogProcessor exposes metrics about SIP dialogs.
 // doc: http://www.opensips.org/html/docs/modules/1.11.x/dialog.html#idp5859728
 // src: https://github.com/OpenSIPS/opensips/blob/1.11/modules/dialog/dialog.c#L283
-type DialogProcessor struct {
+type dialogProcessor struct {
 	statistics map[string]opensips.Statistic
 }
 
@@ -29,20 +29,20 @@ var dialogMetrics = map[string]metric{
 
 func init() {
 	for metric := range dialogMetrics {
-		Processors[metric] = dialogProcessorFunc
+		OpensipsProcessors[metric] = dialogProcessorFunc
 	}
-	Processors["dialog:"] = dialogProcessorFunc
+	OpensipsProcessors["dialog:"] = dialogProcessorFunc
 }
 
 // Describe implements prometheus.Collector.
-func (p DialogProcessor) Describe(ch chan<- *prometheus.Desc) {
+func (p dialogProcessor) Describe(ch chan<- *prometheus.Desc) {
 	for _, metric := range dialogMetrics {
 		ch <- metric.Desc
 	}
 }
 
 // Collect implements prometheus.Collector.
-func (p DialogProcessor) Collect(ch chan<- prometheus.Metric) {
+func (p dialogProcessor) Collect(ch chan<- prometheus.Metric) {
 	ch <- prometheus.MustNewConstMetric(
 		dialogMetrics["active_dialogs"].Desc,
 		dialogMetrics["active_dialogs"].ValueType,
@@ -112,7 +112,7 @@ func (p DialogProcessor) Collect(ch chan<- prometheus.Metric) {
 }
 
 func dialogProcessorFunc(s map[string]opensips.Statistic) prometheus.Collector {
-	return &DialogProcessor{
+	return &dialogProcessor{
 		statistics: s,
 	}
 }

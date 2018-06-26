@@ -74,7 +74,7 @@ func (o *OpenSIPS) GetStatistics(targets ...string) (map[string]Statistic, error
 		line, err = buf.ReadString('\n')
 	}
 
-	statistics, err := parseStatistic(rv[1:])
+	statistics, err := parseStatistics(rv[1:])
 	if err != nil {
 		return nil, fmt.Errorf("Error while parsing statistics: %v", err)
 	}
@@ -82,7 +82,7 @@ func (o *OpenSIPS) GetStatistics(targets ...string) (map[string]Statistic, error
 	return statistics, nil
 }
 
-func parseStatistic(statistics []string) (map[string]Statistic, error) {
+func parseStatistics(statistics []string) (map[string]Statistic, error) {
 	var res = map[string]Statistic{}
 	for _, s := range statistics {
 		s = strings.TrimSuffix(s, "\n")
@@ -97,13 +97,11 @@ func parseStatistic(statistics []string) (map[string]Statistic, error) {
 			return res, err
 		}
 
-		stat := Statistic{
+		res[name] = Statistic{
 			Module: module,
 			Name:   name,
 			Value:  value,
 		}
-
-		res[stat.Name] = stat
 	}
 	return res, nil
 }

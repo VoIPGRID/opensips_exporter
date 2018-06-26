@@ -5,10 +5,10 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-// RegistrarProcessor provides metrcs about SIP registrations
+// registrarProcessor provides metrcs about SIP registrations
 // doc: http://www.opensips.org/html/docs/modules/1.11.x/registrar.html#idp5702944
 // src: https://github.com/OpenSIPS/opensips/blob/1.11/modules/registrar/reg_mod.c#L202
-type RegistrarProcessor struct {
+type registrarProcessor struct {
 	statistics map[string]opensips.Statistic
 }
 
@@ -23,20 +23,20 @@ var registrarMetrics = map[string]metric{
 
 func init() {
 	for metric := range registrarMetrics {
-		Processors[metric] = registrarProcessorFunc
+		OpensipsProcessors[metric] = registrarProcessorFunc
 	}
-	Processors["registrar:"] = registrarProcessorFunc
+	OpensipsProcessors["registrar:"] = registrarProcessorFunc
 }
 
 // Describe implements prometheus.Collector.
-func (p RegistrarProcessor) Describe(ch chan<- *prometheus.Desc) {
+func (p registrarProcessor) Describe(ch chan<- *prometheus.Desc) {
 	for _, metric := range registrarMetrics {
 		ch <- metric.Desc
 	}
 }
 
 // Collect implements prometheus.Collector.
-func (p RegistrarProcessor) Collect(ch chan<- prometheus.Metric) {
+func (p registrarProcessor) Collect(ch chan<- prometheus.Metric) {
 	ch <- prometheus.MustNewConstMetric(
 		registrarMetrics["max_expires"].Desc,
 		registrarMetrics["max_expires"].ValueType,
@@ -67,7 +67,7 @@ func (p RegistrarProcessor) Collect(ch chan<- prometheus.Metric) {
 }
 
 func registrarProcessorFunc(s map[string]opensips.Statistic) prometheus.Collector {
-	return &RegistrarProcessor{
+	return &registrarProcessor{
 		statistics: s,
 	}
 }

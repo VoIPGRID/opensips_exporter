@@ -5,10 +5,10 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-// TmProcessor exposes metrics for stateful processing of SIP transactions.
+// tmProcessor exposes metrics for stateful processing of SIP transactions.
 // doc: http://www.opensips.org/html/docs/modules/1.11.x/tm.html#idp5881664
 // src: https://github.com/OpenSIPS/opensips/blob/1.11/modules/tm/tm.c#L283
-type TmProcessor struct {
+type tmProcessor struct {
 	statistics map[string]opensips.Statistic
 }
 
@@ -29,20 +29,20 @@ var tmMetrics = map[string]metric{
 
 func init() {
 	for metric := range tmMetrics {
-		Processors[metric] = tmProcessorFunc
+		OpensipsProcessors[metric] = tmProcessorFunc
 	}
-	Processors["tm:"] = tmProcessorFunc
+	OpensipsProcessors["tm:"] = tmProcessorFunc
 }
 
 // Describe implements prometheus.Collector.
-func (p TmProcessor) Describe(ch chan<- *prometheus.Desc) {
+func (p tmProcessor) Describe(ch chan<- *prometheus.Desc) {
 	for _, metric := range tmMetrics {
 		ch <- metric.Desc
 	}
 }
 
 // Collect implements prometheus.Collector.
-func (p TmProcessor) Collect(ch chan<- prometheus.Metric) {
+func (p tmProcessor) Collect(ch chan<- prometheus.Metric) {
 	ch <- prometheus.MustNewConstMetric(
 		tmMetrics["received_replies"].Desc,
 		tmMetrics["received_replies"].ValueType,
@@ -108,7 +108,7 @@ func (p TmProcessor) Collect(ch chan<- prometheus.Metric) {
 }
 
 func tmProcessorFunc(s map[string]opensips.Statistic) prometheus.Collector {
-	return &TmProcessor{
+	return &tmProcessor{
 		statistics: s,
 	}
 }

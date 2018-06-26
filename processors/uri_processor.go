@@ -5,10 +5,10 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-// URIProcessor metrics related to SIP URI processing.
+// uriProcessor metrics related to SIP URI processing.
 // doc: http://www.opensips.org/html/docs/modules/1.11.x/uri.html
 // src: https://github.com/OpenSIPS/opensips/blob/1.11/modules/uri/uri_mod.c#L191
-type URIProcessor struct {
+type uriProcessor struct {
 	statistics map[string]opensips.Statistic
 }
 
@@ -20,20 +20,20 @@ var uriMetrics = map[string]metric{
 
 func init() {
 	for metric := range uriMetrics {
-		Processors[metric] = uriProcessorFunc
+		OpensipsProcessors[metric] = uriProcessorFunc
 	}
-	Processors["uri:"] = uriProcessorFunc
+	OpensipsProcessors["uri:"] = uriProcessorFunc
 }
 
 // Describe implements prometheus.Collector.
-func (p URIProcessor) Describe(ch chan<- *prometheus.Desc) {
+func (p uriProcessor) Describe(ch chan<- *prometheus.Desc) {
 	for _, metric := range uriMetrics {
 		ch <- metric.Desc
 	}
 }
 
 // Collect implements prometheus.Collector.
-func (p URIProcessor) Collect(ch chan<- prometheus.Metric) {
+func (p uriProcessor) Collect(ch chan<- prometheus.Metric) {
 	for key, metric := range uriMetrics {
 		ch <- prometheus.MustNewConstMetric(
 			metric.Desc,
@@ -44,7 +44,7 @@ func (p URIProcessor) Collect(ch chan<- prometheus.Metric) {
 }
 
 func uriProcessorFunc(s map[string]opensips.Statistic) prometheus.Collector {
-	return &URIProcessor{
+	return &uriProcessor{
 		statistics: s,
 	}
 }

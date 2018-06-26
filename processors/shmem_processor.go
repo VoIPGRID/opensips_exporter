@@ -5,10 +5,10 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-// ShmemProcessor provices metrics about shared memory
+// shmemProcessor provices metrics about shared memory
 // doc: http://www.opensips.org/Documentation/Interface-CoreStatistics-1-11#toc21
 // src: https://github.com/OpenSIPS/opensips/blob/1.11/mem/shm_mem.c#L52
-type ShmemProcessor struct {
+type shmemProcessor struct {
 	statistics map[string]opensips.Statistic
 }
 
@@ -24,20 +24,20 @@ var shmemMetrics = map[string]metric{
 
 func init() {
 	for metric := range shmemMetrics {
-		Processors[metric] = shmemProcessorFunc
+		OpensipsProcessors[metric] = shmemProcessorFunc
 	}
-	Processors["shmem:"] = shmemProcessorFunc
+	OpensipsProcessors["shmem:"] = shmemProcessorFunc
 }
 
 // Describe implements prometheus.Collector.
-func (p ShmemProcessor) Describe(ch chan<- *prometheus.Desc) {
+func (p shmemProcessor) Describe(ch chan<- *prometheus.Desc) {
 	for _, metric := range shmemMetrics {
 		ch <- metric.Desc
 	}
 }
 
 // Collect implements prometheus.Collector.
-func (p ShmemProcessor) Collect(ch chan<- prometheus.Metric) {
+func (p shmemProcessor) Collect(ch chan<- prometheus.Metric) {
 	for key, metric := range shmemMetrics {
 		ch <- prometheus.MustNewConstMetric(
 			metric.Desc,
@@ -48,7 +48,7 @@ func (p ShmemProcessor) Collect(ch chan<- prometheus.Metric) {
 }
 
 func shmemProcessorFunc(s map[string]opensips.Statistic) prometheus.Collector {
-	return &ShmemProcessor{
+	return &shmemProcessor{
 		statistics: s,
 	}
 }

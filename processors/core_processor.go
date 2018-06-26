@@ -5,10 +5,10 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-// CoreProcessor provides basic metrics,
+// coreProcessor provides basic metrics,
 // doc: http://www.opensips.org/Documentation/Interface-CoreStatistics-1-11#toc1
 // src: https://github.com/OpenSIPS/opensips/blob/1.11/core_stats.h
-type CoreProcessor struct {
+type coreProcessor struct {
 	statistics map[string]opensips.Statistic
 }
 
@@ -29,26 +29,26 @@ var coreMetrics = map[string]metric{
 
 func init() {
 	for metric := range coreMetrics {
-		Processors[metric] = coreProcessorFunc
+		OpensipsProcessors[metric] = coreProcessorFunc
 	}
-	Processors["core:"] = coreProcessorFunc
+	OpensipsProcessors["core:"] = coreProcessorFunc
 }
 
 func coreProcessorFunc(s map[string]opensips.Statistic) prometheus.Collector {
-	return &CoreProcessor{
+	return &coreProcessor{
 		statistics: s,
 	}
 }
 
 // Describe implements prometheus.Collector.
-func (p CoreProcessor) Describe(ch chan<- *prometheus.Desc) {
+func (p coreProcessor) Describe(ch chan<- *prometheus.Desc) {
 	for _, metric := range coreMetrics {
 		ch <- metric.Desc
 	}
 }
 
 // Collect implements prometheus.Collector.
-func (p CoreProcessor) Collect(ch chan<- prometheus.Metric) {
+func (p coreProcessor) Collect(ch chan<- prometheus.Metric) {
 	ch <- prometheus.MustNewConstMetric(
 		coreMetrics["rcv_requests"].Desc,
 		coreMetrics["rcv_requests"].ValueType,

@@ -1,2 +1,7 @@
 # IDE specific files
 .idea/
+
+# Builds
+opensips_exporter
+.build/
+.tarballs/

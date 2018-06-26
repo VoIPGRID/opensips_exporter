@@ -12,6 +12,11 @@ import (
 
 func TestGetStatistics(t *testing.T) {
 	const fakeStatistic = "core:fake_statistic = 42\n"
+	var fakeStatisticObject = opensips.Statistic{
+		Name:   "fake_statistic",
+		Module: "core",
+		Value:  42,
+	}
 	m, err := mock.New([]byte("200 OK\n"+fakeStatistic), 0)
 	if err != nil {
 		t.Fatal(err)
@@ -22,15 +27,15 @@ func TestGetStatistics(t *testing.T) {
 	}
 	var g errgroup.Group
 	g.Go(func() error {
-		lines, err := o.GetStatistics("fake_statistic")
+		statistics, err := o.GetStatistics("fake_statistic")
 		if err != nil {
 			return err
 		}
-		if len(lines) != 1 {
-			return fmt.Errorf("expected 1 line from GetStatistics, got %d", len(lines))
+		if len(statistics) != 1 {
+			return fmt.Errorf("expected 1 line from GetStatistics, got %d", len(statistics))
 		}
-		if lines[0] != fakeStatistic {
-			return fmt.Errorf("expected %q, got %q", fakeStatistic, lines[0])
+		if statistics["fake_statistic"] != fakeStatisticObject {
+			return fmt.Errorf("expected %v, got %v", fakeStatistic, statistics["fake_statistic"])
 		}
 		return nil
 	})
@@ -50,6 +55,11 @@ func TestGetStatistics(t *testing.T) {
 
 func TestConcurrentGetStatistics(t *testing.T) {
 	const fakeStatistic = "core:fake_statistic = 42\n"
+	var fakeStatisticObject = opensips.Statistic{
+		Name:   "fake_statistic",
+		Module: "core",
+		Value:  42,
+	}
 	m, err := mock.New([]byte("200 OK\n"+fakeStatistic), 100*time.Millisecond)
 	if err != nil {
 		t.Fatal(err)
@@ -61,15 +71,15 @@ func TestConcurrentGetStatistics(t *testing.T) {
 	var g errgroup.Group
 	for i := 0; i < 10; i++ {
 		g.Go(func() error {
-			lines, err := o.GetStatistics("fake_statistic")
+			statistics, err := o.GetStatistics("fake_statistic")
 			if err != nil {
 				return err
 			}
-			if len(lines) != 1 {
-				return fmt.Errorf("expected 1 line from GetStatistics, got %d", len(lines))
+			if len(statistics) != 1 {
+				return fmt.Errorf("expected 1 line from GetStatistics, got %d", len(statistics))
 			}
-			if lines[0] != fakeStatistic {
-				return fmt.Errorf("expected %q, got %q", fakeStatistic, lines[0])
+			if statistics["fake_statistic"] != fakeStatisticObject {
+				return fmt.Errorf("expected %v, got %v", fakeStatisticObject, statistics["fake_statistic"])
 			}
 			return nil
 		})

@@ -5,10 +5,10 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-// NetProcessor provides metrics about network packets.
+// netProcessor provides metrics about network packets.
 // doc: http://www.opensips.org/Documentation/Interface-CoreStatistics-1-11#toc17
 // src: https://github.com/OpenSIPS/opensips/blob/b917c70ba8d5797dc6364aaf702c3415539be52a/core_stats.c#L95
-type NetProcessor struct {
+type netProcessor struct {
 	statistics map[string]opensips.Statistic
 }
 
@@ -21,20 +21,20 @@ var netMetrics = map[string]metric{
 
 func init() {
 	for metric := range netMetrics {
-		Processors[metric] = netProcessorFunc
+		OpensipsProcessors[metric] = netProcessorFunc
 	}
-	Processors["net:"] = netProcessorFunc
+	OpensipsProcessors["net:"] = netProcessorFunc
 }
 
 // Describe implements prometheus.Collector.
-func (p NetProcessor) Describe(ch chan<- *prometheus.Desc) {
+func (p netProcessor) Describe(ch chan<- *prometheus.Desc) {
 	for _, metric := range netMetrics {
 		ch <- metric.Desc
 	}
 }
 
 // Collect implements prometheus.Collector.
-func (p NetProcessor) Collect(ch chan<- prometheus.Metric) {
+func (p netProcessor) Collect(ch chan<- prometheus.Metric) {
 	ch <- prometheus.MustNewConstMetric(
 		netMetrics["waiting_udp"].Desc,
 		netMetrics["waiting_udp"].ValueType,
@@ -57,7 +57,7 @@ func (p NetProcessor) Collect(ch chan<- prometheus.Metric) {
 }
 
 func netProcessorFunc(s map[string]opensips.Statistic) prometheus.Collector {
-	return &NetProcessor{
+	return &netProcessor{
 		statistics: s,
 	}
 }

@@ -5,10 +5,10 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-// SlProcessor provides metrics for its stateless UA
+// slProcessor provides metrics for its stateless UA
 // doc: http://www.opensips.org/html/docs/modules/1.11.x/sl.html#idp158896
 // src: https://github.com/OpenSIPS/opensips/blob/1.11/modules/sl/sl.c#L91
-type SlProcessor struct {
+type slProcessor struct {
 	statistics map[string]opensips.Statistic
 }
 
@@ -27,20 +27,20 @@ var slMetrics = map[string]metric{
 
 func init() {
 	for metric := range slMetrics {
-		Processors[metric] = slProcessorFunc
+		OpensipsProcessors[metric] = slProcessorFunc
 	}
-	Processors["sl:"] = slProcessorFunc
+	OpensipsProcessors["sl:"] = slProcessorFunc
 }
 
 // Describe implements prometheus.Collector.
-func (p SlProcessor) Describe(ch chan<- *prometheus.Desc) {
+func (p slProcessor) Describe(ch chan<- *prometheus.Desc) {
 	for _, metric := range slMetrics {
 		ch <- metric.Desc
 	}
 }
 
 // Collect implements prometheus.Collector.
-func (p SlProcessor) Collect(ch chan<- prometheus.Metric) {
+func (p slProcessor) Collect(ch chan<- prometheus.Metric) {
 	ch <- prometheus.MustNewConstMetric(
 		slMetrics["1xx_replies"].Desc,
 		slMetrics["1xx_replies"].ValueType,
@@ -95,7 +95,7 @@ func (p SlProcessor) Collect(ch chan<- prometheus.Metric) {
 }
 
 func slProcessorFunc(s map[string]opensips.Statistic) prometheus.Collector {
-	return &SlProcessor{
+	return &slProcessor{
 		statistics: s,
 	}
 }

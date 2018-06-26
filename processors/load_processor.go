@@ -1,15 +1,16 @@
 package processors
 
 import (
+	"log"
 	"strings"
 
 	"github.com/VoIPGRID/opensips_exporter/opensips"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-// LoadProcessor describes busy children
+// loadProcessor describes busy children
 // doc: http://www.opensips.org/Documentation/Interface-CoreStatistics-1-11#toc14
-type LoadProcessor struct {
+type loadProcessor struct {
 	statistics map[string]opensips.Statistic
 }
 
@@ -21,20 +22,20 @@ type loadMetric struct {
 }
 
 func init() {
-	Processors["load:"] = loadProcessorFunc
-	Processors["tcp-load"] = loadProcessorFunc
-	Processors["load"] = loadProcessorFunc
+	OpensipsProcessors["load:"] = loadProcessorFunc
+	OpensipsProcessors["tcp-load"] = loadProcessorFunc
+	OpensipsProcessors["load"] = loadProcessorFunc
 }
 
 // Describe implements prometheus.Collector.
-func (p LoadProcessor) Describe(ch chan<- *prometheus.Desc) {
+func (p loadProcessor) Describe(ch chan<- *prometheus.Desc) {
 	for _, m := range p.loadMetrics() {
 		ch <- m.metric.Desc
 	}
 }
 
 // Collect implements prometheus.Collector.
-func (p LoadProcessor) Collect(ch chan<- prometheus.Metric) {
+func (p loadProcessor) Collect(ch chan<- prometheus.Metric) {
 	for key, u := range p.loadMetrics() {
 		if u.ip != "" {
 			ch <- prometheus.MustNewConstMetric(
@@ -54,12 +55,12 @@ func (p LoadProcessor) Collect(ch chan<- prometheus.Metric) {
 }
 
 func loadProcessorFunc(s map[string]opensips.Statistic) prometheus.Collector {
-	return &LoadProcessor{
+	return &loadProcessor{
 		statistics: s,
 	}
 }
 
-func (p LoadProcessor) loadMetrics() map[string]loadMetric {
+func (p loadProcessor) loadMetrics() map[string]loadMetric {
 	var metrics = map[string]loadMetric{}
 
 	var stats []opensips.Statistic
@@ -76,17 +77,21 @@ func (p LoadProcessor) loadMetrics() map[string]loadMetric {
 		}
 
 		split := strings.Split(s.Name, ":")
-		protocol := split[0]
-		ip := split[1]
-		port := split[2]
-		port = strings.Trim(port, "-load")
+		if len(split) >= 2 {
+			protocol := split[0]
+			ip := split[1]
+			port := split[2]
+			port = strings.Trim(port, "-load")
 
-		metric := newMetric("load", "load", "Percentage of UDP children that are awake and processing SIP messages on the specific UDP interface.", []string{"ip", "port", "protocol"}, prometheus.GaugeValue)
-		metrics[s.Name] = loadMetric{
-			metric:   metric,
-			ip:       ip,
-			port:     port,
-			protocol: protocol,
+			metric := newMetric("load", "load", "Percentage of UDP children that are awake and processing SIP messages on the specific UDP interface.", []string{"ip", "port", "protocol"}, prometheus.GaugeValue)
+			metrics[s.Name] = loadMetric{
+				metric:   metric,
+				ip:       ip,
+				port:     port,
+				protocol: protocol,
+			}
+		} else {
+			log.Printf("Unable to parse metric '%v'in loadProcessor. Reason: Not enough fields received (protocol, ip, port)", s.Name)
 		}
 	}
 

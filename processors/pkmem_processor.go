@@ -7,10 +7,10 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-// PkmemProcessor provides metrics about private memory usage and fragments
+// pkmemProcessor provides metrics about private memory usage and fragments
 // doc: http://www.opensips.org/Documentation/Interface-CoreStatistics-1-11#toc28
 // src: https://github.com/OpenSIPS/opensips/blob/b917c70ba8d5797dc6364aaf702c3415539be52a/core_stats.c#L165
-type PkmemProcessor struct {
+type pkmemProcessor struct {
 	statistics map[string]opensips.Statistic
 }
 
@@ -20,24 +20,24 @@ type pkmemMetric struct {
 }
 
 func init() {
-	Processors["pkmem:"] = pkmemProcessorFunc
-	Processors["total_size"] = pkmemProcessorFunc
-	Processors["used_size"] = pkmemProcessorFunc
-	Processors["real_used_size"] = pkmemProcessorFunc
-	Processors["max_used_size"] = pkmemProcessorFunc
-	Processors["free_size"] = pkmemProcessorFunc
-	Processors["fragments"] = pkmemProcessorFunc
+	OpensipsProcessors["pkmem:"] = pkmemProcessorFunc
+	OpensipsProcessors["total_size"] = pkmemProcessorFunc
+	OpensipsProcessors["used_size"] = pkmemProcessorFunc
+	OpensipsProcessors["real_used_size"] = pkmemProcessorFunc
+	OpensipsProcessors["max_used_size"] = pkmemProcessorFunc
+	OpensipsProcessors["free_size"] = pkmemProcessorFunc
+	OpensipsProcessors["fragments"] = pkmemProcessorFunc
 }
 
 // Describe implements prometheus.Collector.
-func (p PkmemProcessor) Describe(ch chan<- *prometheus.Desc) {
+func (p pkmemProcessor) Describe(ch chan<- *prometheus.Desc) {
 	for _, m := range p.pkmemMetrics() {
 		ch <- m.metric.Desc
 	}
 }
 
 // Collect implements prometheus.Collector.
-func (p PkmemProcessor) Collect(ch chan<- prometheus.Metric) {
+func (p pkmemProcessor) Collect(ch chan<- prometheus.Metric) {
 	for key, u := range p.pkmemMetrics() {
 		ch <- prometheus.MustNewConstMetric(
 			u.metric.Desc,
@@ -49,12 +49,12 @@ func (p PkmemProcessor) Collect(ch chan<- prometheus.Metric) {
 }
 
 func pkmemProcessorFunc(s map[string]opensips.Statistic) prometheus.Collector {
-	return &PkmemProcessor{
+	return &pkmemProcessor{
 		statistics: s,
 	}
 }
 
-func (p PkmemProcessor) pkmemMetrics() map[string]pkmemMetric {
+func (p pkmemProcessor) pkmemMetrics() map[string]pkmemMetric {
 	var metrics = map[string]pkmemMetric{}
 
 	// Get all usrloc statistics

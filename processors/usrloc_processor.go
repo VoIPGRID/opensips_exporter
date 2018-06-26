@@ -7,10 +7,10 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-// UsrlocProcessor provides metrics about User locations via registring.
+// usrlocProcessor provides metrics about User locations via registring.
 // doc: http://www.opensips.org/html/docs/modules/1.11.x/usrloc.html#idp5699792
 // src: Not clear
-type UsrlocProcessor struct {
+type usrlocProcessor struct {
 	statistics map[string]opensips.Statistic
 }
 
@@ -20,21 +20,21 @@ type usrlocMetric struct {
 }
 
 func init() {
-	Processors["usrloc:"] = usrlocProcessorFunc
-	Processors["contacts"] = usrlocProcessorFunc
-	Processors["users"] = usrlocProcessorFunc
-	Processors["expires"] = usrlocProcessorFunc
+	OpensipsProcessors["usrloc:"] = usrlocProcessorFunc
+	OpensipsProcessors["contacts"] = usrlocProcessorFunc
+	OpensipsProcessors["users"] = usrlocProcessorFunc
+	OpensipsProcessors["expires"] = usrlocProcessorFunc
 }
 
 // Describe implements prometheus.Collector.
-func (p UsrlocProcessor) Describe(ch chan<- *prometheus.Desc) {
+func (p usrlocProcessor) Describe(ch chan<- *prometheus.Desc) {
 	for _, m := range p.usrlocMetrics() {
 		ch <- m.metric.Desc
 	}
 }
 
 // Collect implements prometheus.Collector.
-func (p UsrlocProcessor) Collect(ch chan<- prometheus.Metric) {
+func (p usrlocProcessor) Collect(ch chan<- prometheus.Metric) {
 	for key, u := range p.usrlocMetrics() {
 		if u.domain != "" {
 			ch <- prometheus.MustNewConstMetric(
@@ -55,12 +55,12 @@ func (p UsrlocProcessor) Collect(ch chan<- prometheus.Metric) {
 }
 
 func usrlocProcessorFunc(s map[string]opensips.Statistic) prometheus.Collector {
-	return &UsrlocProcessor{
+	return &usrlocProcessor{
 		statistics: s,
 	}
 }
 
-func (p UsrlocProcessor) usrlocMetrics() map[string]usrlocMetric {
+func (p usrlocProcessor) usrlocMetrics() map[string]usrlocMetric {
 	var metrics = map[string]usrlocMetric{}
 
 	// Get all usrloc statistics

@@ -15,8 +15,8 @@ Make sure `$GOPATH/bin` is in your `$PATH`.
 Usage of opensips_exporter:
   -path string
     	The path where metrics will be served (default "/metrics")
-  -port string
-    	Port on which the OpenSIPS exporter listens. (default "9434")
+  -addr string
+    	Address on which the OpenSIPS exporter listens. (e.g. 127.0.0.1:9434) (default ":9434")
   -socket string
     	Path to the socket file for OpenSIPS. (default "/var/run/ser-fg/ser.sock")
 ```
@@ -25,6 +25,7 @@ Usage of opensips_exporter:
 
 | Metric | Meaning | Labels |
 | ------ | ------- | ------ |
+| opensips_up | Whether the opensips exporter could read metrics from the Management Interface socket. (i.e. is OpenSIPS up) | |
 | opensips_core_bad_URIs_rcvd | Number of URIs that OpenSIPS failed to parse. | |
 | opensips_core_bad_msg_hdr | Number of SIP headers that OpenSIPS failed to parse. | |
 | opensips_core_replies | Number of received replies by OpenSIPS. | kind|

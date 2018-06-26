@@ -8,6 +8,8 @@ import (
 	"os"
 	"strings"
 
+	"fmt"
+
 	"github.com/VoIPGRID/opensips_exporter/opensips"
 	"github.com/VoIPGRID/opensips_exporter/processors"
 	"github.com/prometheus/client_golang/prometheus"
@@ -28,15 +30,24 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		collect = collectAll
 	}
 
+	var scrapeProcessor prometheus.Collector
 	statistics, err := o.GetStatistics(collect...)
 	if err != nil {
-		http.Error(w, "Could not collect statistics", http.StatusInternalServerError)
-		return
+		scrapeProcessor = processors.NewScrapeProcessor(0)
+		log.Printf("Error encountered while reading statistics from opensips socket: %v", err)
+	} else {
+		scrapeProcessor = processors.NewScrapeProcessor(1)
 	}
+	collectors[scrapeProcessor] = true
 
+	var selectedProcessors = map[string]bool{}
 	for _, processor := range collect {
-		if p, ok := processors.Processors[processor]; ok {
-			collectors[p(statistics)] = true
+		if p, ok := processors.OpensipsProcessors[processor]; ok {
+			processorFunc := fmt.Sprintf("%p", p)
+			if _, ok := selectedProcessors[processorFunc]; !ok {
+				selectedProcessors[processorFunc] = true
+				collectors[p(statistics)] = true
+			}
 		}
 	}
 
@@ -74,13 +85,13 @@ func strflag(name string, value string, usage string) *string {
 var (
 	socketPath  *string
 	metricsPath *string
-	port        *string
+	addr        *string
 )
 
 func main() {
-	port = strflag("port", "9434", "Port on which the OpenSIPS exporter listens.")
-	metricsPath = strflag("path", "/metrics", "The path where metrics will be served")
-	socketPath = strflag("socket", "/var/run/ser-fg/ser.sock", "Path to the socket file for OpenSIPS.")
+	addr = strflag("addr", ":9434", "Address on which the OpenSIPS exporter listens. (e.g. 127.0.0.1:9434)")
+	metricsPath = strflag("path", "/metrics", "The path where metrics will be served.")
+	socketPath = strflag("socket", "/var/run/ser-fg/ser.sock", "Path to the socket file for OpenSIPS.)")
 	flag.Parse()
 
 	// This part is to mock up setting up and using the Management
@@ -101,5 +112,6 @@ func main() {
 			</body>
 			</html>`))
 	})
-	http.ListenAndServe(":"+*port, nil)
+	log.Printf("Started OpenSIPS exporter, listening on %v", *addr)
+	log.Fatal(http.ListenAndServe(*addr, nil))
 }
