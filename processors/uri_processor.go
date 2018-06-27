@@ -14,7 +14,7 @@ type uriProcessor struct {
 
 var uriLabelNames = []string{}
 var uriMetrics = map[string]metric{
-	"positive checks": newMetric("uri", "positive_checks", "Amount of positive URI checks.", uriLabelNames, prometheus.CounterValue),
+	"positive":        newMetric("uri", "positive_checks", "Amount of positive URI checks.", uriLabelNames, prometheus.CounterValue),
 	"negative_checks": newMetric("uri", "negative_checks", "Amount of negative URI checks.", uriLabelNames, prometheus.CounterValue),
 }
 
@@ -34,12 +34,23 @@ func (p uriProcessor) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect implements prometheus.Collector.
 func (p uriProcessor) Collect(ch chan<- prometheus.Metric) {
-	for key, metric := range uriMetrics {
-		ch <- prometheus.MustNewConstMetric(
-			metric.Desc,
-			metric.ValueType,
-			p.statistics[key].Value,
-		)
+	for _, s := range p.statistics {
+		if s.Module == "uri" {
+			switch s.Name {
+			case "positive":
+				ch <- prometheus.MustNewConstMetric(
+					uriMetrics["positive"].Desc,
+					uriMetrics["positive"].ValueType,
+					s.Value,
+				)
+			case "negative_checks":
+				ch <- prometheus.MustNewConstMetric(
+					uriMetrics["negative_checks"].Desc,
+					uriMetrics["negative_checks"].ValueType,
+					s.Value,
+				)
+			}
+		}
 	}
 }
 

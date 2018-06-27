@@ -38,12 +38,47 @@ func (p shmemProcessor) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect implements prometheus.Collector.
 func (p shmemProcessor) Collect(ch chan<- prometheus.Metric) {
-	for key, metric := range shmemMetrics {
-		ch <- prometheus.MustNewConstMetric(
-			metric.Desc,
-			metric.ValueType,
-			p.statistics[key].Value,
-		)
+	for _, s := range p.statistics {
+		if s.Module == "shmem" {
+			switch s.Name {
+			case "total_size":
+				ch <- prometheus.MustNewConstMetric(
+					shmemMetrics["total_size"].Desc,
+					shmemMetrics["total_size"].ValueType,
+					s.Value,
+				)
+			case "used_size":
+				ch <- prometheus.MustNewConstMetric(
+					shmemMetrics["used_size"].Desc,
+					shmemMetrics["used_size"].ValueType,
+					s.Value,
+				)
+			case "real_used_size":
+				ch <- prometheus.MustNewConstMetric(
+					shmemMetrics["real_used_size"].Desc,
+					shmemMetrics["real_used_size"].ValueType,
+					s.Value,
+				)
+			case "max_used_size":
+				ch <- prometheus.MustNewConstMetric(
+					shmemMetrics["max_used_size"].Desc,
+					shmemMetrics["max_used_size"].ValueType,
+					s.Value,
+				)
+			case "free_size":
+				ch <- prometheus.MustNewConstMetric(
+					shmemMetrics["free_size"].Desc,
+					shmemMetrics["free_size"].ValueType,
+					s.Value,
+				)
+			case "fragments":
+				ch <- prometheus.MustNewConstMetric(
+					shmemMetrics["fragments"].Desc,
+					shmemMetrics["fragments"].ValueType,
+					s.Value,
+				)
+			}
+		}
 	}
 }
 

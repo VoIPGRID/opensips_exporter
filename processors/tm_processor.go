@@ -43,68 +43,85 @@ func (p tmProcessor) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect implements prometheus.Collector.
 func (p tmProcessor) Collect(ch chan<- prometheus.Metric) {
-	ch <- prometheus.MustNewConstMetric(
-		tmMetrics["received_replies"].Desc,
-		tmMetrics["received_replies"].ValueType,
-		p.statistics["received_replies"].Value,
-	)
-	ch <- prometheus.MustNewConstMetric(
-		tmMetrics["relayed_replies"].Desc,
-		tmMetrics["relayed_replies"].ValueType,
-		p.statistics["relayed_replies"].Value,
-	)
-	ch <- prometheus.MustNewConstMetric(
-		tmMetrics["local_replies"].Desc,
-		tmMetrics["local_replies"].ValueType,
-		p.statistics["local_replies"].Value,
-	)
-	ch <- prometheus.MustNewConstMetric(
-		tmMetrics["UAS_transactions"].Desc,
-		tmMetrics["UAS_transactions"].ValueType,
-		p.statistics["UAS_transactions"].Value,
-		"UAS",
-	)
-	ch <- prometheus.MustNewConstMetric(
-		tmMetrics["UAC_transactions"].Desc,
-		tmMetrics["UAC_transactions"].ValueType,
-		p.statistics["UAC_transactions"].Value,
-		"UAC",
-	)
-	ch <- prometheus.MustNewConstMetric(
-		tmMetrics["2xx_transactions"].Desc,
-		tmMetrics["2xx_transactions"].ValueType,
-		p.statistics["2xx_transactions"].Value,
-		"2xx",
-	)
-	ch <- prometheus.MustNewConstMetric(
-		tmMetrics["3xx_transactions"].Desc,
-		tmMetrics["3xx_transactions"].ValueType,
-		p.statistics["3xx_transactions"].Value,
-		"3xx",
-	)
-	ch <- prometheus.MustNewConstMetric(
-		tmMetrics["4xx_transactions"].Desc,
-		tmMetrics["4xx_transactions"].ValueType,
-		p.statistics["4xx_transactions"].Value,
-		"4xx",
-	)
-	ch <- prometheus.MustNewConstMetric(
-		tmMetrics["5xx_transactions"].Desc,
-		tmMetrics["5xx_transactions"].ValueType,
-		p.statistics["5xx_transactions"].Value,
-		"5xx",
-	)
-	ch <- prometheus.MustNewConstMetric(
-		tmMetrics["6xx_transactions"].Desc,
-		tmMetrics["6xx_transactions"].ValueType,
-		p.statistics["6xx_transactions"].Value,
-		"6xx",
-	)
-	ch <- prometheus.MustNewConstMetric(
-		tmMetrics["inuse_transactions"].Desc,
-		tmMetrics["inuse_transactions"].ValueType,
-		p.statistics["inuse_transactions"].Value,
-	)
+	for _, s := range p.statistics {
+		if s.Module == "tm" {
+			switch s.Name {
+			case "received_replies":
+				ch <- prometheus.MustNewConstMetric(
+					tmMetrics["received_replies"].Desc,
+					tmMetrics["received_replies"].ValueType,
+					s.Value,
+				)
+			case "relayed_replies":
+				ch <- prometheus.MustNewConstMetric(
+					tmMetrics["relayed_replies"].Desc,
+					tmMetrics["relayed_replies"].ValueType,
+					s.Value,
+				)
+			case "local_replies":
+				ch <- prometheus.MustNewConstMetric(
+					tmMetrics["local_replies"].Desc,
+					tmMetrics["local_replies"].ValueType,
+					s.Value,
+				)
+			case "UAS_transactions":
+				ch <- prometheus.MustNewConstMetric(
+					tmMetrics["UAS_transactions"].Desc,
+					tmMetrics["UAS_transactions"].ValueType,
+					s.Value,
+					"UAS",
+				)
+			case "UAC_transactions":
+				ch <- prometheus.MustNewConstMetric(
+					tmMetrics["UAC_transactions"].Desc,
+					tmMetrics["UAC_transactions"].ValueType,
+					s.Value,
+					"UAC",
+				)
+			case "2xx_transactions":
+				ch <- prometheus.MustNewConstMetric(
+					tmMetrics["2xx_transactions"].Desc,
+					tmMetrics["2xx_transactions"].ValueType,
+					s.Value,
+					"2xx",
+				)
+			case "3xx_transactions":
+				ch <- prometheus.MustNewConstMetric(
+					tmMetrics["3xx_transactions"].Desc,
+					tmMetrics["3xx_transactions"].ValueType,
+					s.Value,
+					"3xx",
+				)
+			case "4xx_transactions":
+				ch <- prometheus.MustNewConstMetric(
+					tmMetrics["4xx_transactions"].Desc,
+					tmMetrics["4xx_transactions"].ValueType,
+					s.Value,
+					"4xx",
+				)
+			case "5xx_transactions":
+				ch <- prometheus.MustNewConstMetric(
+					tmMetrics["5xx_transactions"].Desc,
+					tmMetrics["5xx_transactions"].ValueType,
+					s.Value,
+					"5xx",
+				)
+			case "6xx_transactions":
+				ch <- prometheus.MustNewConstMetric(
+					tmMetrics["6xx_transactions"].Desc,
+					tmMetrics["6xx_transactions"].ValueType,
+					s.Value,
+					"6xx",
+				)
+			case "inuse_transactions":
+				ch <- prometheus.MustNewConstMetric(
+					tmMetrics["inuse_transactions"].Desc,
+					tmMetrics["inuse_transactions"].ValueType,
+					s.Value,
+				)
+			}
+		}
+	}
 }
 
 func tmProcessorFunc(s map[string]opensips.Statistic) prometheus.Collector {

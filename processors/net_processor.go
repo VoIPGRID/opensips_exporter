@@ -35,25 +35,33 @@ func (p netProcessor) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect implements prometheus.Collector.
 func (p netProcessor) Collect(ch chan<- prometheus.Metric) {
-	ch <- prometheus.MustNewConstMetric(
-		netMetrics["waiting_udp"].Desc,
-		netMetrics["waiting_udp"].ValueType,
-		p.statistics["waiting_udp"].Value,
-		"udp",
-	)
-	ch <- prometheus.MustNewConstMetric(
-		netMetrics["waiting_tcp"].Desc,
-		netMetrics["waiting_tcp"].ValueType,
-		p.statistics["waiting_tcp"].Value,
-		"tcp",
-	)
-	ch <- prometheus.MustNewConstMetric(
-		netMetrics["waiting_tls"].Desc,
-		netMetrics["waiting_tls"].ValueType,
-		p.statistics["waiting_tls"].Value,
-		"tls",
-	)
-
+	for _, s := range p.statistics {
+		if s.Module == "net" {
+			switch s.Name {
+			case "waiting_udp":
+				ch <- prometheus.MustNewConstMetric(
+					netMetrics["waiting_udp"].Desc,
+					netMetrics["waiting_udp"].ValueType,
+					s.Value,
+					"udp",
+				)
+			case "waiting_tcp":
+				ch <- prometheus.MustNewConstMetric(
+					netMetrics["waiting_tcp"].Desc,
+					netMetrics["waiting_tcp"].ValueType,
+					s.Value,
+					"tcp",
+				)
+			case "waiting_tls":
+				ch <- prometheus.MustNewConstMetric(
+					netMetrics["waiting_tls"].Desc,
+					netMetrics["waiting_tls"].ValueType,
+					s.Value,
+					"tls",
+				)
+			}
+		}
+	}
 }
 
 func netProcessorFunc(s map[string]opensips.Statistic) prometheus.Collector {

@@ -57,7 +57,7 @@ func pkmemProcessorFunc(s map[string]opensips.Statistic) prometheus.Collector {
 func (p pkmemProcessor) pkmemMetrics() map[string]pkmemMetric {
 	var metrics = map[string]pkmemMetric{}
 
-	// Get all usrloc statistics
+	// Get all pkmem statistics
 	var stats []opensips.Statistic
 	for _, s := range p.statistics {
 		if s.Module == "pkmem" {

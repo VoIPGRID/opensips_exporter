@@ -37,33 +37,44 @@ func (p registrarProcessor) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect implements prometheus.Collector.
 func (p registrarProcessor) Collect(ch chan<- prometheus.Metric) {
-	ch <- prometheus.MustNewConstMetric(
-		registrarMetrics["max_expires"].Desc,
-		registrarMetrics["max_expires"].ValueType,
-		p.statistics["max_expires"].Value,
-	)
-	ch <- prometheus.MustNewConstMetric(
-		registrarMetrics["max_contacts"].Desc,
-		registrarMetrics["max_contacts"].ValueType,
-		p.statistics["max_contacts"].Value,
-	)
-	ch <- prometheus.MustNewConstMetric(
-		registrarMetrics["default_expire"].Desc,
-		registrarMetrics["default_expire"].ValueType,
-		p.statistics["default_expire"].Value,
-	)
-	ch <- prometheus.MustNewConstMetric(
-		registrarMetrics["accepted_regs"].Desc,
-		registrarMetrics["accepted_regs"].ValueType,
-		p.statistics["accepted_regs"].Value,
-		"accepted",
-	)
-	ch <- prometheus.MustNewConstMetric(
-		registrarMetrics["rejected_regs"].Desc,
-		registrarMetrics["rejected_regs"].ValueType,
-		p.statistics["rejected_regs"].Value,
-		"rejected",
-	)
+	for _, s := range p.statistics {
+		if s.Module == "registrar" {
+			switch s.Name {
+			case "max_expires":
+				ch <- prometheus.MustNewConstMetric(
+					registrarMetrics["max_expires"].Desc,
+					registrarMetrics["max_expires"].ValueType,
+					s.Value,
+				)
+			case "max_contacts":
+				ch <- prometheus.MustNewConstMetric(
+					registrarMetrics["max_contacts"].Desc,
+					registrarMetrics["max_contacts"].ValueType,
+					s.Value,
+				)
+			case "default_expire":
+				ch <- prometheus.MustNewConstMetric(
+					registrarMetrics["default_expire"].Desc,
+					registrarMetrics["default_expire"].ValueType,
+					s.Value,
+				)
+			case "accepted_regs":
+				ch <- prometheus.MustNewConstMetric(
+					registrarMetrics["accepted_regs"].Desc,
+					registrarMetrics["accepted_regs"].ValueType,
+					s.Value,
+					"accepted",
+				)
+			case "rejected_regs":
+				ch <- prometheus.MustNewConstMetric(
+					registrarMetrics["rejected_regs"].Desc,
+					registrarMetrics["rejected_regs"].ValueType,
+					s.Value,
+					"rejected",
+				)
+			}
+		}
+	}
 }
 
 func registrarProcessorFunc(s map[string]opensips.Statistic) prometheus.Collector {

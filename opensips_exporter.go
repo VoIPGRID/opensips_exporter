@@ -17,7 +17,7 @@ import (
 )
 
 var o *opensips.OpenSIPS
-var collectAll = []string{"core:", "shmem:", "net:", "uri:", "tm:", "sl:", "usrloc:", "dialog:", "registrar:", "pkmem:", "load:"}
+var collectAll = []string{"core:", "shmem:", "net:", "uri:", "tm:", "sl:", "usrloc:", "dialog:", "registrar:", "pkmem:", "load:", "tmx:"}
 
 const envPrefix = "OPENSIPS_EXPORTER"
 
@@ -55,7 +55,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	for collector := range collectors {
 		err := registry.Register(collector)
 		if err != nil {
-			log.Printf("Couldn't register collector for %v: %v\n", collector, err)
+			log.Printf("Problems registering the %T processor (could be due to no metrics found for this processor). Error: %v\n", collector, err)
 		}
 	}
 

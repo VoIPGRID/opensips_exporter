@@ -43,72 +43,89 @@ func (p dialogProcessor) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect implements prometheus.Collector.
 func (p dialogProcessor) Collect(ch chan<- prometheus.Metric) {
-	ch <- prometheus.MustNewConstMetric(
-		dialogMetrics["active_dialogs"].Desc,
-		dialogMetrics["active_dialogs"].ValueType,
-		p.statistics["active_dialogs"].Value,
-		"active",
-	)
-	ch <- prometheus.MustNewConstMetric(
-		dialogMetrics["early_dialogs"].Desc,
-		dialogMetrics["early_dialogs"].ValueType,
-		p.statistics["early_dialogs"].Value,
-		"early",
-	)
-	ch <- prometheus.MustNewConstMetric(
-		dialogMetrics["processed_dialogs"].Desc,
-		dialogMetrics["processed_dialogs"].ValueType,
-		p.statistics["processed_dialogs"].Value,
-		"processed",
-	)
-	ch <- prometheus.MustNewConstMetric(
-		dialogMetrics["expired_dialogs"].Desc,
-		dialogMetrics["expired_dialogs"].ValueType,
-		p.statistics["expired_dialogs"].Value,
-		"expired",
-	)
-	ch <- prometheus.MustNewConstMetric(
-		dialogMetrics["failed_dialogs"].Desc,
-		dialogMetrics["failed_dialogs"].ValueType,
-		p.statistics["failed_dialogs"].Value,
-		"failed",
-	)
-	ch <- prometheus.MustNewConstMetric(
-		dialogMetrics["create_sent"].Desc,
-		dialogMetrics["create_sent"].ValueType,
-		p.statistics["create_sent"].Value,
-		"create",
-	)
-	ch <- prometheus.MustNewConstMetric(
-		dialogMetrics["update_sent"].Desc,
-		dialogMetrics["update_sent"].ValueType,
-		p.statistics["update_sent"].Value,
-		"update",
-	)
-	ch <- prometheus.MustNewConstMetric(
-		dialogMetrics["delete_sent"].Desc,
-		dialogMetrics["delete_sent"].ValueType,
-		p.statistics["delete_sent"].Value,
-		"delete",
-	)
-	ch <- prometheus.MustNewConstMetric(
-		dialogMetrics["create_rcv"].Desc,
-		dialogMetrics["create_rcv"].ValueType,
-		p.statistics["create_rcv"].Value,
-		"create",
-	)
-	ch <- prometheus.MustNewConstMetric(
-		dialogMetrics["update_rcv"].Desc,
-		dialogMetrics["update_rcv"].ValueType,
-		p.statistics["update_rcv"].Value,
-		"update",
-	)
-	ch <- prometheus.MustNewConstMetric(
-		dialogMetrics["delete_rcv"].Desc,
-		dialogMetrics["delete_rcv"].ValueType,
-		p.statistics["delete_rcv"].Value,
-		"delete",
-	)
+	for _, s := range p.statistics {
+		if s.Module == "dialog" {
+			switch s.Name {
+			case "active_dialogs":
+				ch <- prometheus.MustNewConstMetric(
+					dialogMetrics["active_dialogs"].Desc,
+					dialogMetrics["active_dialogs"].ValueType,
+					s.Value,
+					"active",
+				)
+			case "early_dialogs":
+				ch <- prometheus.MustNewConstMetric(
+					dialogMetrics["early_dialogs"].Desc,
+					dialogMetrics["early_dialogs"].ValueType,
+					s.Value,
+					"early",
+				)
+			case "processed_dialogs":
+				ch <- prometheus.MustNewConstMetric(
+					dialogMetrics["processed_dialogs"].Desc,
+					dialogMetrics["processed_dialogs"].ValueType,
+					s.Value,
+					"processed",
+				)
+			case "expired_dialogs":
+				ch <- prometheus.MustNewConstMetric(
+					dialogMetrics["expired_dialogs"].Desc,
+					dialogMetrics["expired_dialogs"].ValueType,
+					s.Value,
+					"expired",
+				)
+			case "failed_dialogs":
+				ch <- prometheus.MustNewConstMetric(
+					dialogMetrics["failed_dialogs"].Desc,
+					dialogMetrics["failed_dialogs"].ValueType,
+					s.Value,
+					"failed",
+				)
+			case "create_sent":
+				ch <- prometheus.MustNewConstMetric(
+					dialogMetrics["create_sent"].Desc,
+					dialogMetrics["create_sent"].ValueType,
+					s.Value,
+					"create",
+				)
+			case "update_sent":
+				ch <- prometheus.MustNewConstMetric(
+					dialogMetrics["update_sent"].Desc,
+					dialogMetrics["update_sent"].ValueType,
+					s.Value,
+					"update",
+				)
+			case "delete_sent":
+				ch <- prometheus.MustNewConstMetric(
+					dialogMetrics["delete_sent"].Desc,
+					dialogMetrics["delete_sent"].ValueType,
+					s.Value,
+					"delete",
+				)
+			case "create_rcv":
+				ch <- prometheus.MustNewConstMetric(
+					dialogMetrics["create_rcv"].Desc,
+					dialogMetrics["create_rcv"].ValueType,
+					s.Value,
+					"create",
+				)
+			case "update_rcv":
+				ch <- prometheus.MustNewConstMetric(
+					dialogMetrics["update_rcv"].Desc,
+					dialogMetrics["update_rcv"].ValueType,
+					s.Value,
+					"update",
+				)
+			case "delete_rcv":
+				ch <- prometheus.MustNewConstMetric(
+					dialogMetrics["delete_rcv"].Desc,
+					dialogMetrics["delete_rcv"].ValueType,
+					s.Value,
+					"delete",
+				)
+			}
+		}
+	}
 }
 
 func dialogProcessorFunc(s map[string]opensips.Statistic) prometheus.Collector {
