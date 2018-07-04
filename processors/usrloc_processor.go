@@ -104,7 +104,7 @@ func (p usrlocProcessor) usrlocMetrics() map[string]usrlocMetric {
 	}
 
 	metrics["registered_users"] = usrlocMetric{
-		metric: newMetric("userloc", "registered_users_total", " Total number of AOR existing in the USRLOC memory cache for all domains.", []string{}, prometheus.CounterValue),
+		metric: newMetric("usrloc", "registered_users_total", " Total number of AOR existing in the USRLOC memory cache for all domains.", []string{}, prometheus.CounterValue),
 		domain: "",
 	}
 	return metrics
