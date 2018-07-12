@@ -7,20 +7,6 @@ these statistics.
 Tested and developed for OpenSIPS 1.11. Though the Management Interface to gather metrics is available
 in other OpenSIPS versions.
 
-## Table of contents
-
-- [opensips_exporter](#opensipsexporter)
-    - [Table of contents](#table-of-contents)
-    - [Status](#status)
-    - [Usage](#usage)
-        - [Exported Metrics](#exported-metrics)
-        - [Processors](#processors)
-            - [Filtering enabled processors](#filtering-enabled-processors)
-        - [Development](#development)
-    - [Contributing](#contributing)
-    - [Contributors](#contributors)
-    - [License](#license)
-
 ## Status
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/VoIPGRID/opensips_exporter)](https://goreportcard.com/report/github.com/VoIPGRID/opensips_exporter) 
@@ -29,6 +15,17 @@ in other OpenSIPS versions.
 Active / maintained
 
 This project is considered stable for use in production environments.
+
+## Examples and dashboard
+A few examples are provided to give you a clue on how this would be setup on a Prometheus instance:
+- [Prometheus scrape config](examples/prometheus.yaml)
+- [AlertManager rules](examples/alerts.yaml)
+
+And because gathering the metrics is only half of the story there's [a dashboard](examples/dashboard.json) you can import into a Grafana installation which works wonders with this exporter. The dashboard is also available on the [Grafana dashboard site](https://grafana.com/dashboards/6935). 
+
+A picture is worth a thousand words.
+![OpenSIPS Dashboard for Grafana](examples/dashboard.png "OpenSIPS dashboard for Grafana")
+*Note: the dashboard uses elements from the [node exporter](https://github.com/prometheus/node_exporter/) but can still be used without it.*
 
 ## Usage
 
@@ -44,7 +41,7 @@ Usage of opensips_exporter:
         Path to the socket file for OpenSIPS. (default "/var/run/ser-fg/ser.sock")
 ```
 
-### Exported Metrics
+## Exported Metrics
 
 | Metric | Meaning | Labels | Metric type |
 | ------ | ------- | ------ | ------ |
@@ -103,7 +100,7 @@ Usage of opensips_exporter:
 | opensips_usrloc_expires | Total number of expired contacts for that domain. | domain | Gauge |
 | opensips_usrloc_users | Number of AOR existing in the USRLOC memory cache for that domain. | domain | Gauge |
 
-### Processors
+## Processors
 
 There are processors available per 'module' of OpenSIPS. The processors take the
 statistics from the OpenSIPS socket and turn it into a Prometheus metric. You can 
@@ -112,9 +109,8 @@ For example the`opensips_core_replies` metric comes from the core module and its
 processor can be found in `./processors/core_processor`.
 
 You can find out more about the available modules in the OpenSIPS documentation.
-At this time not all modules have a processor written for them. (help wanted!)
 
-#### Filtering enabled processors
+### Filtering enabled processors
 
 It is possible to select what processors you want metrics from. You can do this by
 appending `collect[]` parameters to your request. If for example you only want to
@@ -128,7 +124,7 @@ curl localhost:9434/metrics?collect[]=core:&collect[]=usrloc:
 
 **_Note: You have to append `:` to the module name for this to work._**
 
-### Development
+## Development
 
 To work on opensips_exporter, get a recent [Go], get a recent [dep], and
 run:

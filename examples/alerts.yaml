@@ -1,0 +1,26 @@
+groups:
+- name: opensips-alerts
+  rules:
+  - alert: OpenSIPSExporterDown
+    expr: up{job="opensips"} == 0
+    for: 15m
+    labels:
+      severity: warning
+    annotations:
+      description: "The OpenSIPS exporter was unable to be scraped for the last 15m."
+
+  - alert: OpenSIPSDown
+    expr: opensips_up{job="opensips"} == 0
+    for: 3m
+    labels:
+      severity: critical
+    annotations:
+      description: "OpenSIPS on {{ $labels.instance }} did not respond to any queries on the Management Interface socket in the last 3m. This could mean the socket has died or the OpenSIPS process has died."
+
+  - alert: OpenSIPSRestarted
+    expr: opensips_core_uptime_seconds{job="opensips"} < 300
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      description: "OpenSIPS on {{$labels.instance }} has been up for {{ $value }}s and has therefore likely been restarted."
