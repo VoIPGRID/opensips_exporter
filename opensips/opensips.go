@@ -98,7 +98,8 @@ func parseStatistics(statistics []string) (map[string]Statistic, error) {
 
 func parseStatistic(metric string) (Statistic, error) {
 	var name, module, valueString string
-	// Check for OpenSIPS > 2 metric format
+	// Check for OpenSIPS >= 2 metric format
+	// i.e.shmem:total_size:: 2147483648
 	if strings.Contains(metric, "::") {
 		valueIndex := strings.LastIndex(metric, "::")
 		valueString = strings.TrimSpace(metric[valueIndex+2:])
@@ -106,7 +107,8 @@ func parseStatistic(metric string) (Statistic, error) {
 		module = metricSplit[0]
 		name = strings.Split(strings.Join(metricSplit[1:], ":"), " ")[0]
 	} else if strings.Contains(metric, "=") {
-		// OpenSIPS < 1 metric format
+		// OpenSIPS < 2 metric format
+		// i.e. shmem:total_size = 2147483648
 		metricSplit := strings.Split(metric, ":")
 		module = metricSplit[0]
 		name = strings.Split(strings.Join(metricSplit[1:], ":"), " ")[0]

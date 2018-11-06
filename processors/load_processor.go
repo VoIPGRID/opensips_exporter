@@ -46,12 +46,19 @@ func (p loadProcessor) Describe(ch chan<- *prometheus.Desc) {
 // Collect implements prometheus.Collector.
 func (p loadProcessor) Collect(ch chan<- prometheus.Metric) {
 	for key, u := range p.loadMetrics() {
-		if u.ip != "" || u.process != "" {
+		if u.ip != "" {
 			ch <- prometheus.MustNewConstMetric(
 				u.metric.Desc,
 				u.metric.ValueType,
 				p.statistics[key].Value,
-				u.ip, u.port, u.protocol, u.process,
+				u.ip, u.port, u.protocol,
+			)
+		} else if u.process != "" {
+			ch <- prometheus.MustNewConstMetric(
+				u.metric.Desc,
+				u.metric.ValueType,
+				p.statistics[key].Value,
+				u.process,
 			)
 		} else {
 			ch <- prometheus.MustNewConstMetric(
@@ -82,6 +89,7 @@ func (p loadProcessor) loadMetrics() map[string]loadMetric {
 	for _, s := range stats {
 
 		if s.Name == "tcp-load" {
+			// tcp-load is a OpenSIPS < 2 metric.
 			metrics["tcp-load"] = loadMetric{
 				metric:   newMetric("load", "tcp_load", "Percentage of TCP children that are awake and processing SIP messages.", []string{}, prometheus.GaugeValue),
 				ip:       "",
@@ -91,9 +99,15 @@ func (p loadProcessor) loadMetrics() map[string]loadMetric {
 			}
 			continue
 		} else if strings.Contains(s.Name, "udp:") || strings.Contains(s.Name, "tcp:") {
+			// The load metric is an OpenSIPS < 2 metric. The format for it is:
+			// load:udp:127.0.0.1:5060-load = 0
 			metrics[s.Name] = parseLegacyLoadFormat(s)
 			continue
 		} else if strings.Contains(s.Name, "proc") {
+			// This metric is an OpenSIPS > 2 metric. The format for it is:
+			// load:load-proc-1:: 0
+			// load:load1m-proc-1:: 0
+			// load:load10m-proc-1:: 0
 			metrics[s.Name] = parseNewLoadFormat(s)
 			continue
 		} else if s.Name == "load" {
@@ -164,7 +178,7 @@ func parseLegacyLoadFormat(statistic opensips.Statistic) loadMetric {
 		port := split[2]
 		port = strings.Trim(port, "-load")
 
-		metric := newMetric("load", "load", "The realtime load of entire OpenSIPS - this counts all the core processes of OpenSIPS; the additional processes requested by modules are not counted in this load.", []string{"ip", "port", "protocol", "process"}, prometheus.GaugeValue)
+		metric := newMetric("load", "load", "The realtime load of entire OpenSIPS - this counts all the core processes of OpenSIPS; the additional processes requested by modules are not counted in this load.", []string{"ip", "port", "protocol"}, prometheus.GaugeValue)
 		ret = loadMetric{
 			metric:   metric,
 			ip:       ip,
@@ -186,7 +200,7 @@ func parseNewLoadFormat(statistic opensips.Statistic) loadMetric {
 	switch load {
 	case "load":
 		return loadMetric{
-			metric:   newMetric("load", "load", "The realtime load of the process ID.", []string{"ip", "port", "protocol", "process"}, prometheus.GaugeValue),
+			metric:   newMetric("load", "process", "The realtime load of the process ID.", []string{"process"}, prometheus.GaugeValue),
 			ip:       "",
 			port:     "",
 			protocol: "",
@@ -194,7 +208,7 @@ func parseNewLoadFormat(statistic opensips.Statistic) loadMetric {
 		}
 	case "load1m":
 		return loadMetric{
-			metric:   newMetric("load", "1m", "The last minute average load of the process ID.", []string{"ip", "port", "protocol", "process"}, prometheus.GaugeValue),
+			metric:   newMetric("load", "1m", "The last minute average load of the process ID.", []string{"process"}, prometheus.GaugeValue),
 			ip:       "",
 			port:     "",
 			protocol: "",
@@ -202,7 +216,7 @@ func parseNewLoadFormat(statistic opensips.Statistic) loadMetric {
 		}
 	case "load10m":
 		return loadMetric{
-			metric:   newMetric("load", "10m", "The last 10 minutes average load of the process ID.", []string{"ip", "port", "protocol", "process"}, prometheus.GaugeValue),
+			metric:   newMetric("load", "10m", "The last 10 minutes average load of the process ID.", []string{"process"}, prometheus.GaugeValue),
 			ip:       "",
 			port:     "",
 			protocol: "",
