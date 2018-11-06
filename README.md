@@ -1,11 +1,10 @@
 # opensips_exporter 
 This exporter exposes OpenSIPS metrics for consumption by Prometheus using the Unix socket 
 provided by OpenSIPS. It uses the
-OpenSIPS [Management Interface](http://www.opensips.org/Documentation/Interface-MI-1-11) to gather
+OpenSIPS [Management Interface](http://www.opensips.org/Documentation/Interface-MI-2-4) to gather
 these statistics.
 
-Tested and developed for OpenSIPS 1.11. Though the Management Interface to gather metrics is available
-in other OpenSIPS versions.
+Tested and developed against OpenSIPS versions 1.10 and 2.4, though this will probably work with all other versions as well. 
 
 ## Status
 
@@ -123,8 +122,8 @@ You can find out more about the available modules in the OpenSIPS documentation.
 
 It is possible to select what processors you want metrics from. You can do this by
 appending `collect[]` parameters to your request. If for example you only want to
-get metrics about the [core](http://www.opensips.org/Documentation/Interface-CoreStatistics-1-11) 
-and [usrloc](http://www.opensips.org/html/docs/modules/1.11.x/usrloc.html#idp5699792) 
+get metrics about the [core](http://www.opensips.org/Documentation/Interface-CoreStatistics-2-4) 
+and [usrloc](http://www.opensips.org/html/docs/modules/2.4.x/usrloc.html#exported_statistics) 
 module you can do this as follows:
 
 ```bash
