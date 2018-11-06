@@ -2,6 +2,7 @@ package opensips
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -76,7 +77,7 @@ func (o *OpenSIPS) GetStatistics(targets ...string) (map[string]Statistic, error
 
 	statistics, err := parseStatistics(rv[1:])
 	if err != nil {
-		return nil, fmt.Errorf("Error while parsing statistics: %v", err)
+		return nil, fmt.Errorf("error while parsing statistics: %v", err)
 	}
 
 	return statistics, nil
@@ -86,24 +87,47 @@ func parseStatistics(statistics []string) (map[string]Statistic, error) {
 	var res = map[string]Statistic{}
 	for _, s := range statistics {
 		s = strings.TrimSuffix(s, "\n")
-		metricSplit := strings.Split(s, ":")
-		module := metricSplit[0]
-		name := strings.Split(strings.Join(metricSplit[1:], ":"), " ")[0]
-
-		i := strings.LastIndex(s, " ")
-		valueString := s[i+1:]
-		value, err := strconv.ParseFloat(valueString, 64)
+		stat, err := parseStatistic(s)
 		if err != nil {
 			return res, err
 		}
-
-		res[name] = Statistic{
-			Module: module,
-			Name:   name,
-			Value:  value,
-		}
+		res[stat.Name] = stat
 	}
 	return res, nil
+}
+
+func parseStatistic(metric string) (Statistic, error) {
+	var name, module, valueString string
+	// Check for OpenSIPS >= 2 metric format
+	// i.e.shmem:total_size:: 2147483648
+	if strings.Contains(metric, "::") {
+		valueIndex := strings.LastIndex(metric, "::")
+		valueString = strings.TrimSpace(metric[valueIndex+2:])
+		metricSplit := strings.Split(metric[:valueIndex], ":")
+		module = metricSplit[0]
+		name = strings.Split(strings.Join(metricSplit[1:], ":"), " ")[0]
+	} else if strings.Contains(metric, "=") {
+		// OpenSIPS < 2 metric format
+		// i.e. shmem:total_size = 2147483648
+		metricSplit := strings.Split(metric, ":")
+		module = metricSplit[0]
+		name = strings.Split(strings.Join(metricSplit[1:], ":"), " ")[0]
+		i := strings.LastIndex(metric, " ")
+		valueString = metric[i+1:]
+	} else {
+		return Statistic{}, errors.New("Error: unknown metric format encountered for: " + metric)
+	}
+
+	value, err := strconv.ParseFloat(valueString, 64)
+	if err != nil {
+		return Statistic{}, err
+	}
+
+	return Statistic{
+		Module: module,
+		Name:   name,
+		Value:  value,
+	}, nil
 }
 
 func (o *OpenSIPS) roundtrip(request []byte) ([]byte, error) {

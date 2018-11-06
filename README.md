@@ -58,7 +58,16 @@ Usage of opensips_exporter:
 | opensips_dialog_received | The number of dialog events received from other OpenSIPS instances. | event | Counter |
 | opensips_dialog_sent | Number of replicated dialog requests send to other OpenSIPS instances. | event | Counter |
 | opensips_load_load | Percentage of UDP children that are awake and processing SIP messages on the specific UDP interface. |ip, port, protocol| Gauge |
+| opensips_load_process | The realtime load of the process ID. (**OpenSIPS >= 2.4**) |process| Gauge |
 | opensips_load_tcp_load | Percentage of TCP children that are awake and processing SIP messages. | | Gauge |
+| opensips_load_core | The realtime load of entire OpenSIPS - this counts all the core processes of OpenSIPS; the additional processes requested by modules are not counted in this load. (**OpenSIPS >= 2.4**) | | Gauge |
+| opensips_load_core_1m | The last minute average load of core OpenSIPS (covering only core/SIP processes) (**OpenSIPS >= 2.4**) | | Gauge |
+| opensips_load_core_10m | The last 10 minute average load of core OpenSIPS (covering only core/SIP processes) (**OpenSIPS >= 2.4**) | | Gauge |
+| opensips_load_all | The realtime load of entire OpenSIPS, counting both core and module processes. (**OpenSIPS >= 2.4**) | | Gauge |
+| opensips_load_all_1m | The last minute average load of entire OpenSIPS (covering all processes). (**OpenSIPS >= 2.4**) | | Gauge |
+| opensips_load_all_10m | The last 10 minute average load of entire OpenSIPS (covering all processes). (**OpenSIPS >= 2.4**) | | Gauge |
+| opensips_load_1m | The last minute average load of the process ID. (**OpenSIPS >= 2.4**) | ip, port, protocol, process | Gauge |
+| opensips_load_10m | The last 10 minute average load of the process ID. (**OpenSIPS >= 2.4**) | ip, port, protocol, process | Gauge |
 | opensips_net_waiting | Number of bytes waiting to be consumed on an interface that OpenSIPS is listening on. | protocol | Gauge |
 | opensips_pkmem_fragments | Currently available number of free fragments in the private memory for OpenSIPS process. | pid | Gauge |
 | opensips_pkmem_free_size | Free private memory available for the OpenSIPS process. Computed as total_size - real_used_size. | pid | Gauge |
