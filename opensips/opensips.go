@@ -100,6 +100,12 @@ func parseStatistic(metric string) (Statistic, error) {
 	var name, module, valueString string
 	// Check for OpenSIPS >= 2 metric format
 	// i.e.shmem:total_size:: 2147483648
+	fmt.Errorf("Parsing: %v", metric)
+	if metric == "" {
+		// There's an empty line in the output since OpenSIPS 2.4.5
+		// ignore and continue
+		return Statistic{}, nil
+	}
 	if strings.Contains(metric, "::") {
 		valueIndex := strings.LastIndex(metric, "::")
 		valueString = strings.TrimSpace(metric[valueIndex+2:])
