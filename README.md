@@ -40,6 +40,12 @@ Usage of opensips_exporter:
         Path to the socket file for OpenSIPS. (default "/var/run/ser-fg/ser.sock")
 ```
 
+For your openSIPS instance make sure that you have the `mi_datagram` module loaded and defined the location of the socket like so.
+```
+loadmodule "mi_datagram.so"
+modparam("mi_datagram", "socket_name", "RUNDIR/ser.sock")
+```
+
 ## Exported Metrics
 
 | Metric | Meaning | Labels | Metric type |
