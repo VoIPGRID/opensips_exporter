@@ -2738,7 +2738,7 @@
           }
         }
       ],
-      "title": "Kamailio transactions",
+      "title": "Opensips transactions",
       "type": "row"
     },
     {
