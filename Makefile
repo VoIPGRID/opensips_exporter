@@ -28,6 +28,9 @@ DOCKER_IMAGE_TAG        ?= $(subst /,-,$(shell git rev-parse --abbrev-ref HEAD))
 MACH                    ?= $(shell uname -m)
 DOCKERFILE              ?= Dockerfile
 
+NAME ?= opensips
+OPENSIPS_DOCKER_TAG ?= 2.4.0
+
 all: format vet staticcheck build
 
 style:
@@ -57,6 +60,15 @@ tarball: $(PROMU)
 docker:
 	@echo ">> building docker image from $(DOCKERFILE)"
 	@docker build --file $(DOCKERFILE) -t "$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG)" .
+
+docker-build:
+	docker build \
+		--tag="opensips/opensips:$(OPENSIPS_DOCKER_TAG)" \
+		.
+
+start:
+	docker run -p 8888:8888 -d --name $(NAME) opensips/opensips:$(OPENSIPS_DOCKER_TAG) -v /home/ruben/go/src/github.com/VoIPGRID/opensips_exporter/:/tmp/
+
 
 $(GOPATH)/bin/promtool promtool:
 	@GOOS= GOARCH= $(GO) get -u github.com/prometheus/prometheus/cmd/promtool

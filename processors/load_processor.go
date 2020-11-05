@@ -1,11 +1,10 @@
 package processors
 
 import (
+	"fmt"
 	"strings"
 
 	"log"
-
-	"fmt"
 
 	"github.com/VoIPGRID/opensips_exporter/opensips"
 	"github.com/prometheus/client_golang/prometheus"
@@ -164,6 +163,15 @@ func (p loadProcessor) loadMetrics() map[string]loadMetric {
 				process:  "",
 			}
 			continue
+		} else if s.Name == "processes_number" {
+			metrics["processes_number"] = loadMetric{
+				metric:   newMetric("load", "processes_number", "Number of running OpenSIPS processes.", []string{}, prometheus.GaugeValue),
+				ip:       "",
+				protocol: "",
+				port:     "",
+				process:  "",
+			}
+			continue
 		}
 	}
 	return metrics
@@ -221,6 +229,14 @@ func parseNewLoadFormat(statistic opensips.Statistic) loadMetric {
 			port:     "",
 			protocol: "",
 			process:  process,
+		}
+	case "processes_number":
+		return loadMetric{
+			metric:   newMetric("load", "processes_number", "Number of running OpenSIPS processes.", []string{}, prometheus.GaugeValue),
+			ip:       "",
+			protocol: "",
+			port:     "",
+			process:  "",
 		}
 	}
 	fmt.Errorf("could not parse load metric for %v", statistic.Name)

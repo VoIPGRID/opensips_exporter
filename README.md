@@ -2,9 +2,9 @@
 This exporter exposes OpenSIPS metrics for consumption by Prometheus using the Unix socket 
 provided by OpenSIPS. It uses the
 OpenSIPS [Management Interface](http://www.opensips.org/Documentation/Interface-MI-2-4) to gather
-these statistics.
+these statistics. It supports two protocols to communicate with the Management Interface `mi_datagram` for OpenSIPS versions up to 2.4.x and for OpenSIPS versions from 3.0 and higher it supports `mi_http` (JSON-RPC)
 
-Tested and developed against OpenSIPS versions 1.10 and 2.4, though this will probably work with all other versions as well. 
+Tested and developed against OpenSIPS versions 1.10, 2.4, 3.0, 3.1 though this will probably work with all other versions as well. 
 
 ## Status
 
@@ -32,18 +32,41 @@ Make sure `$GOPATH/bin` is in your `$PATH`.
 
 ```text
 Usage of opensips_exporter:
-  -path string
-        The path where metrics will be served (default "/metrics")
   -addr string
-        Address on which the OpenSIPS exporter listens. (e.g. 127.0.0.1:9434) (default ":9434")
+    	Address on which the OpenSIPS exporter listens. (e.g. 127.0.0.1:9434) (default ":9434")
+  -http_address string
+    	Address to query the management query through HTTP (e.g. http://127.0.0.1:8888/mi/) (default "http://127.0.0.1:8888/mi/")
+  -path string
+    	The path where metrics will be served. (default "/metrics")
+  -protocol string (required)
+    	Which protocol to use to get data from the Management Interface (mi_datagram & mi_http currently supported) (default "mi_datagram")
   -socket string
-        Path to the socket file for OpenSIPS. (default "/var/run/ser-fg/ser.sock")
+    	Path to the socket file for OpenSIPS.) (default "/var/run/ser-fg/ser.sock")
 ```
 
-For your openSIPS instance make sure that you have the `mi_datagram` module loaded and defined the location of the socket like so.
+### OpenSIPS up to version 2.4
+Up to OpenSIPS version 2.4 the exporter works with the `mi_datagram` module. You can load it in your OpenSIPS config like so:
 ```
 loadmodule "mi_datagram.so"
 modparam("mi_datagram", "socket_name", "RUNDIR/ser.sock")
+```
+Then start the exporter with the following params:
+```
+opensips_exporter -protocol mi_datagram -socket RUNDIR/ser.sock
+```
+
+### OpenSIPS version 3.0 and higher
+From OpenSIPS version 3.0 and higher the datagram protocol is not supported, instead you can use the `mi_http` module
+which uses JSON-RPC to communicate with the Management Interface. For debian you have to install 
+the `opensips-http-modules` to include the module in your OpenSIPS installation. You can load it in your OpenSIPS config like so:
+```
+loadmodule "httpd.so"
+loadmodule "mi_http.so"
+modparam("httpd", "ip", "127.0.0.1")
+```
+By default the management interface listens on port 8888 which is the default in the exporter as well. You can start the exporter with the following params:
+```
+opensips_exporter -protocol mi_http
 ```
 
 ## Exported Metrics
@@ -73,6 +96,7 @@ modparam("mi_datagram", "socket_name", "RUNDIR/ser.sock")
 | opensips_load_all_10m | The last 10 minute average load of entire OpenSIPS (covering all processes). (**OpenSIPS >= 2.4**) | | Gauge |
 | opensips_load_1m | The last minute average load of the process ID. (**OpenSIPS >= 2.4**) | ip, port, protocol, process | Gauge |
 | opensips_load_10m | The last 10 minute average load of the process ID. (**OpenSIPS >= 2.4**) | ip, port, protocol, process | Gauge |
+| opensips_load_processes_number | Number of running OpenSIPS processes. (**OpenSIPS >= 3.0**) |  | Gauge |
 | opensips_net_waiting | Number of bytes waiting to be consumed on an interface that OpenSIPS is listening on. | protocol | Gauge |
 | opensips_pkmem_fragments | Currently available number of free fragments in the private memory for OpenSIPS process. | pid | Gauge |
 | opensips_pkmem_free_size | Free private memory available for the OpenSIPS process. Computed as total_size - real_used_size. | pid | Gauge |
