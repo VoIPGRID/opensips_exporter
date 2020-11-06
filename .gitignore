@@ -3,5 +3,4 @@
 
 # Builds
 opensips_exporter
-.build/
-.tarballs/
+dist

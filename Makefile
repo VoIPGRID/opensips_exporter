@@ -49,18 +49,6 @@ staticcheck: $(STATICCHECK)
 	@echo ">> running staticcheck"
 	@$(STATICCHECK) -ignore "$(STATICCHECK_IGNORE)" $(pkgs)
 
-build: $(PROMU)
-	@echo ">> building binaries"
-	@$(PROMU) build --prefix $(PREFIX)
-
-tarball: $(PROMU)
-	@echo ">> building release tarball"
-	@$(PROMU) tarball --prefix $(PREFIX) $(BIN_DIR)
-
-docker:
-	@echo ">> building docker image from $(DOCKERFILE)"
-	@docker build --file $(DOCKERFILE) -t "$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG)" .
-
 docker-test-build:
 	docker build \
 		--tag="opensips/opensips:$(OPENSIPS_DOCKER_TAG)" \
@@ -68,13 +56,6 @@ docker-test-build:
 
 docker-test-start:
 	docker run -p 8888:8888 -d --name $(NAME) opensips/opensips:$(OPENSIPS_DOCKER_TAG)
-
-
-$(GOPATH)/bin/promtool promtool:
-	@GOOS= GOARCH= $(GO) get -u github.com/prometheus/prometheus/cmd/promtool
-
-$(GOPATH)/bin/promu promu:
-	@GOOS= GOARCH= $(GO) get -u github.com/prometheus/promu
 
 $(GOPATH)/bin/staticcheck:
 	@GOOS= GOARCH= $(GO) get -u honnef.co/go/tools/cmd/staticcheck
