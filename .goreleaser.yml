@@ -6,13 +6,8 @@ builds:
       - linux
     goarch:
       - amd64
-      - arm
       - arm64
       - 386
-    goarm:
-      - 5
-      - 6
-      - 7
 
 checksum:
   name_template: "{{ .ProjectName }}_sha256sums.txt"
@@ -42,9 +37,7 @@ nfpms:
     license: Apache 2.0
     description: Simple server that scrapes OpenSIPS stats and exports them via HTTP for Prometheus consumption
     formats:
-      - apk
       - deb
-      - rpm
 
 release:
   github:
