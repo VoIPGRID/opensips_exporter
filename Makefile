@@ -61,13 +61,13 @@ docker:
 	@echo ">> building docker image from $(DOCKERFILE)"
 	@docker build --file $(DOCKERFILE) -t "$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG)" .
 
-docker-build:
+docker-test-build:
 	docker build \
 		--tag="opensips/opensips:$(OPENSIPS_DOCKER_TAG)" \
-		.
+		-f Dockerfile.testing .
 
-start:
-	docker run -p 8888:8888 -d --name $(NAME) opensips/opensips:$(OPENSIPS_DOCKER_TAG) -v /home/ruben/go/src/github.com/VoIPGRID/opensips_exporter/:/tmp/
+docker-test-start:
+	docker run -p 8888:8888 -d --name $(NAME) opensips/opensips:$(OPENSIPS_DOCKER_TAG)
 
 
 $(GOPATH)/bin/promtool promtool:

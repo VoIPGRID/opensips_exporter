@@ -36,8 +36,13 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	var err error
 	switch *protocol {
 	case "mi_datagram":
+		o, err = opensips.New(*socketPath)
+		if err != nil {
+			log.Fatalf("Could not create datagram socket: %v", err)
+		}
 		statistics, err = o.GetStatistics(collect...)
 	case "mi_http":
+		j = jsonrpc.New(*httpEndpoint)
 		statistics, err = j.GetStatistics(collect...)
 	}
 
@@ -118,15 +123,6 @@ func main() {
 		}
 	default:
 		log.Fatalf("Please set the -protocol flag to define which protocol the exporter should use to query for metrics. (mi_datagram or mi_http)")
-	}
-
-	// This part is to mock up setting up and using the Management
-	// Interface. Replace/remove this eventually.
-	var err error
-	o, err = opensips.New(*socketPath)
-	j, err = jsonrpc.New(*httpEndpoint)
-	if err != nil {
-		log.Fatalf("failed to open socket: %v\n", err)
 	}
 
 	http.HandleFunc(*metricsPath, handler)

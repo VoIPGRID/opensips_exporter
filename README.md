@@ -164,13 +164,10 @@ curl localhost:9434/metrics?collect[]=core:&collect[]=usrloc:
 
 ## Development
 
-To work on opensips_exporter, get a recent [Go], get a recent [dep], and
+To work on opensips_exporter, get a recent [Go] and
 run:
 
     go get -u github.com/VoIPGRID/opensips_exporter
-
-While developing, make sure to run `dep ensure` often enough to keep
-dependencies up-to-date.
 
 The `github.com/VoIPGRID/opensips_exporter/opensips` package contains the
 implementation of the interactions with OpenSIPS needed to get statistics from
@@ -191,7 +188,7 @@ See the [CONTRIBUTING.md](.github/CONTRIBUTING.md) file on how to contribute to 
 See the [CONTRIBUTORS.md](CONTRIBUTORS.md) file for a list of contributors to the project.
 
 [Go]: https://golang.org/doc/install (Getting Started - The Go Programming Language)
-[dep]: https://golang.github.io/dep/docs/installation.html (Installation · dep)
+[mod]: https://golang.org/ref/mod (Installation · go mod)
 
 ## License
 

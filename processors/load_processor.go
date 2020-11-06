@@ -1,7 +1,6 @@
 package processors
 
 import (
-	"fmt"
 	"strings"
 
 	"log"
@@ -239,6 +238,5 @@ func parseNewLoadFormat(statistic opensips.Statistic) loadMetric {
 			process:  "",
 		}
 	}
-	fmt.Errorf("could not parse load metric for %v", statistic.Name)
 	return loadMetric{}
 }
