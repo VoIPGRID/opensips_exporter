@@ -2,7 +2,7 @@ package opensips
 
 import (
 	"bytes"
-	"errors"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -12,6 +12,7 @@ import (
 	"strings"
 	"sync/atomic"
 	"time"
+	"github.com/KeisukeYamashita/go-jsonrpc"
 )
 
 const firstLineOK = "200 OK\n"
@@ -52,76 +53,48 @@ func New(socket string) (*OpenSIPS, error) {
 // statistics OpenSIPS sends back. The targets can be "all", "group:" or
 // "name" (e.g. "shmem:" or "rcv_requests").
 func (o *OpenSIPS) GetStatistics(targets ...string) (map[string]Statistic, error) {
-	msg := []byte(":get_statistics:\n")
-	for _, target := range targets {
-		msg = append(msg, []byte(target)...)
-		msg = append(msg, '\n')
-	}
-	resp, err := o.roundtrip(msg)
+	rpcClient := jsonrpc.NewRPCClient("")
+	req := rpcClient.NewRPCRequestObject("get_statistics", targets)
+	msg, err := json.Marshal(req)
 	if err != nil {
 		return nil, err
 	}
-	buf := bytes.NewBuffer(resp)
-	line, err := buf.ReadString('\n')
+	respBytes, err := o.roundtrip(msg)
 	if err != nil {
 		return nil, err
 	}
-	if line != firstLineOK {
-		return nil, fmt.Errorf("expected %q, got %q", firstLineOK, line)
-	}
-	var rv []string
-	for err == nil {
-		rv = append(rv, line)
-		line, err = buf.ReadString('\n')
-	}
-
-	statistics, err := parseStatistics(rv[1:])
+	decoder := json.NewDecoder(bytes.NewBuffer(respBytes))
+	decoder.UseNumber()
+	rpcResponse := jsonrpc.RPCResponse{}
+	err = decoder.Decode(&rpcResponse)
 	if err != nil {
-		return nil, fmt.Errorf("error while parsing statistics: %v", err)
+		return nil, err
 	}
-
+	statistics, err := parseStatistics(rpcResponse.Result.(map[string]interface{}))
+	if err != nil {
+		return nil, err
+	}
 	return statistics, nil
 }
 
-func parseStatistics(statistics []string) (map[string]Statistic, error) {
+func parseStatistics(response map[string]interface{}) (map[string]Statistic, error) {
 	var res = map[string]Statistic{}
-	for _, s := range statistics {
-		s = strings.TrimSuffix(s, "\n")
-		stat, err := parseStatistic(s)
+	for key, value := range response {
+		stat, err := parseStatistic(key, fmt.Sprintf("%s", value))
 		if err != nil {
-			return res, err
+			return res, fmt.Errorf("error while parsing stat: %w", err)
 		}
 		res[stat.Name] = stat
 	}
 	return res, nil
 }
 
-func parseStatistic(metric string) (Statistic, error) {
-	var name, module, valueString string
-	// Check for OpenSIPS >= 2 metric format
-	// i.e.shmem:total_size:: 2147483648
-	if metric == "" {
-		// There's an empty line in the output since OpenSIPS 2.4.5
-		// ignore and continue
-		return Statistic{}, nil
-	}
-	if strings.Contains(metric, "::") {
-		valueIndex := strings.LastIndex(metric, "::")
-		valueString = strings.TrimSpace(metric[valueIndex+2:])
-		metricSplit := strings.Split(metric[:valueIndex], ":")
-		module = metricSplit[0]
-		name = strings.Split(strings.Join(metricSplit[1:], ":"), " ")[0]
-	} else if strings.Contains(metric, "=") {
-		// OpenSIPS < 2 metric format
-		// i.e. shmem:total_size = 2147483648
-		metricSplit := strings.Split(metric, ":")
-		module = metricSplit[0]
-		name = strings.Split(strings.Join(metricSplit[1:], ":"), " ")[0]
-		i := strings.LastIndex(metric, " ")
-		valueString = metric[i+1:]
-	} else {
-		return Statistic{}, errors.New("Error: unknown metric format encountered for: " + metric)
-	}
+func parseStatistic(key string, valueString string) (Statistic, error) {
+	// OpenSIPS < 2 metric format
+	// i.e. shmem:total_size = 2147483648
+	metricSplit := strings.Split(key, ":")
+	module := metricSplit[0]
+	name := metricSplit[1]
 
 	value, err := strconv.ParseFloat(valueString, 64)
 	if err != nil {
