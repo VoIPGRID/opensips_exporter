@@ -18,10 +18,7 @@ tarball:
 crossbuild:
     platforms:
         - linux/amd64
-        - linux/386
         - darwin/amd64
-        - darwin/386
         - netbsd/amd64
-        - netbsd/386
         - linux/arm
         - linux/arm64

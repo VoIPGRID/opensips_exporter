@@ -12,7 +12,6 @@ type dialogProcessor struct {
 	statistics map[string]opensips.Statistic
 }
 
-var dialogLabelNames = []string{}
 var dialogMetrics = map[string]metric{
 	"active_dialogs":    newMetric("dialog", "dialogs", "Number of dialogs.", []string{"status"}, prometheus.GaugeValue),
 	"early_dialogs":     newMetric("dialog", "dialogs", "Number of dialogs.", []string{"status"}, prometheus.GaugeValue),

@@ -1,10 +1,13 @@
 # opensips_exporter 
-This exporter exposes OpenSIPS metrics for consumption by Prometheus using the Unix socket 
-provided by OpenSIPS. It uses the
-OpenSIPS [Management Interface](http://www.opensips.org/Documentation/Interface-MI-2-4) to gather
-these statistics. It supports two protocols to communicate with the Management Interface `mi_datagram` for OpenSIPS versions up to 2.4.x and for OpenSIPS versions from 3.0 and higher it supports `mi_http` (JSON-RPC)
+This exporter exposes OpenSIPS metrics for consumption by Prometheus. It uses the
+OpenSIPS [Management Interface](http://www.opensips.org/Documentation/Interface-MI-3-0) to gather
+these statistics over `mi_http` (JSON-RPC), supported by OpenSIPS 3.0 and higher.
 
-Tested and developed against OpenSIPS versions 1.10, 2.4, 3.0, 3.1 though this will probably work with all other versions as well. 
+Tested and developed against OpenSIPS versions 3.0 and 3.1 though this will probably work with all
+other 3.x versions as well.
+
+*Note: support for the `mi_datagram` protocol (OpenSIPS up to 2.4.x) was removed in 2.1.0. Use
+2.0.0 if you need it.*
 
 ## Status
 
@@ -38,35 +41,20 @@ Usage of opensips_exporter:
     	Address to query the management query through HTTP (e.g. http://127.0.0.1:8888/mi/) (default "http://127.0.0.1:8888/mi/")
   -path string
     	The path where metrics will be served. (default "/metrics")
-  -protocol string (required)
-    	Which protocol to use to get data from the Management Interface (mi_datagram & mi_http currently supported) (default "mi_datagram")
-  -socket string
-    	Path to the socket file for OpenSIPS.) (default "/var/run/ser-fg/ser.sock")
-```
-
-### OpenSIPS up to version 2.4
-Up to OpenSIPS version 2.4 the exporter works with the `mi_datagram` module. You can load it in your OpenSIPS config like so:
-```
-loadmodule "mi_datagram.so"
-modparam("mi_datagram", "socket_name", "RUNDIR/ser.sock")
-```
-Then start the exporter with the following params:
-```
-opensips_exporter -protocol mi_datagram -socket RUNDIR/ser.sock
 ```
 
 ### OpenSIPS version 3.0 and higher
-From OpenSIPS version 3.0 and higher the datagram protocol is not supported, instead you can use the `mi_http` module
-which uses JSON-RPC to communicate with the Management Interface. For debian you have to install 
+The exporter uses the `mi_http` module, which uses JSON-RPC to communicate with the Management
+Interface. For debian you have to install 
 the `opensips-http-modules` to include the module in your OpenSIPS installation. You can load it in your OpenSIPS config like so:
 ```
 loadmodule "httpd.so"
 loadmodule "mi_http.so"
 modparam("httpd", "ip", "127.0.0.1")
 ```
-By default the management interface listens on port 8888 which is the default in the exporter as well. You can start the exporter with the following params:
+By default the management interface listens on port 8888 which is the default in the exporter as well. You can start the exporter like so:
 ```
-opensips_exporter -protocol mi_http
+opensips_exporter -http_address http://127.0.0.1:8888/mi/
 ```
 
 ## Exported Metrics
@@ -169,10 +157,9 @@ run:
 
     go get -u github.com/VoIPGRID/opensips_exporter
 
-The `github.com/VoIPGRID/opensips_exporter/opensips` package contains the
+The `github.com/VoIPGRID/opensips_exporter/opensips/jsonrpc` package contains the
 implementation of the interactions with OpenSIPS needed to get statistics from
-the mi_datagram Unix socket of a running OpenSIPS. For tests, there is a mock
-in the `./internal/mock` package.
+the mi_http Management Interface of a running OpenSIPS.
 
 Metrics from different OpenSIPS modules are extracted by processors defined in
 the `./processors` package. To extend this exporter with metrics from other modules

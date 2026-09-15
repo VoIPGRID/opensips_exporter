@@ -16,7 +16,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-var o *opensips.OpenSIPS
 var j *jsonrpc.JSONRPC
 var collectAll = []string{"core:", "shmem:", "net:", "uri:", "tm:", "sl:", "usrloc:", "dialog:", "registrar:", "pkmem:", "load:", "tmx:"}
 
@@ -34,17 +33,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	var statistics map[string]opensips.Statistic
 	var err error
-	switch *protocol {
-	case "mi_datagram":
-		o, err = opensips.New(*socketPath)
-		if err != nil {
-			log.Fatalf("Could not create datagram socket: %v", err)
-		}
-		statistics, err = o.GetStatistics(collect...)
-	case "mi_http":
-		j = jsonrpc.New(*httpEndpoint)
-		statistics, err = j.GetStatistics(collect...)
-	}
+	j = jsonrpc.New(*httpEndpoint)
+	statistics, err = j.GetStatistics(collect...)
 
 	if err != nil {
 		scrapeProcessor = processors.NewScrapeProcessor(0)
@@ -97,43 +87,35 @@ func strflag(name string, value string, usage string) *string {
 }
 
 var (
-	socketPath   *string
 	metricsPath  *string
 	addr         *string
-	protocol     *string
 	httpEndpoint *string
 )
 
 func main() {
 	addr = strflag("addr", ":9434", "Address on which the OpenSIPS exporter listens. (e.g. 127.0.0.1:9434)")
 	metricsPath = strflag("path", "/metrics", "The path where metrics will be served.")
-	socketPath = strflag("socket", "/var/run/ser-fg/ser.sock", "Path to the socket file for OpenSIPS.)")
 	httpEndpoint = strflag("http_address", "http://127.0.0.1:8888/mi/", "Address to query the Management Interface through HTTP with (e.g. http://127.0.0.1:8888/mi/)")
-	protocol = strflag("protocol", "", "Which protocol to use to get data from the Management Interface (mi_datagram & mi_http currently supported)")
 	flag.Parse()
 
-	switch *protocol {
-	case "mi_datagram":
-		if *socketPath == "" {
-			log.Fatalf("The -protocol flag is set to mi_datagram but the -socket param is not set. Exiting.")
-		}
-	case "mi_http":
-		if *httpEndpoint == "" {
-			log.Fatalf("The -protocol is set to mi_http but the -http_address flag is not set. Exiting.")
-		}
-	default:
-		log.Fatalf("Please set the -protocol flag to define which protocol the exporter should use to query for metrics. (mi_datagram or mi_http)")
+	if *httpEndpoint == "" {
+		log.Fatalf("The -http_address flag is not set. Exiting.")
 	}
 
 	http.HandleFunc(*metricsPath, handler)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(`<html>
+		_, err := w.Write([]byte(`<html>
 			<head><title>OpenSIPS Exporter</title></head>
 			<body>
 			<h1>OpenSIPS Exporter</h1>
 			<p><a href="` + *metricsPath + `">Metrics</a></p>
 			</body>
 			</html>`))
+		if err != nil {
+			log.Printf("Error writing response: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 	})
 	log.Printf("Started OpenSIPS exporter, listening on %v", *addr)
 	log.Fatal(http.ListenAndServe(*addr, nil))
