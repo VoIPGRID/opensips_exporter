@@ -35,7 +35,7 @@ func (o *JSONRPC) GetStatistics(targets ...string) (map[string]opensips.Statisti
 		return nil, fmt.Errorf("error while getting statistics from JSON-RPC endpoint: %w", err)
 	}
 
-	statistics, err := parseStatistics(resp.Result.(map[string]interface{}))
+	statistics, err := parseStatistics(resp.Result.(map[string]any))
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +43,7 @@ func (o *JSONRPC) GetStatistics(targets ...string) (map[string]opensips.Statisti
 	return statistics, nil
 }
 
-func parseStatistics(response map[string]interface{}) (map[string]opensips.Statistic, error) {
+func parseStatistics(response map[string]any) (map[string]opensips.Statistic, error) {
 	var res = map[string]opensips.Statistic{}
 	for key, value := range response {
 		asString := fmt.Sprintf("%s = %s", key, value)
